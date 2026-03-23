@@ -1,0 +1,44 @@
+[package]
+name = "shotstyle"
+version = "1.0.0"
+description = "shot.style (Tauri)"
+authors = ["you"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset", "macos-private-api", "tray-icon"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+mime_guess = "2"
+thiserror = "1"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+arboard = "3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2.5.0"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+tauri-plugin-log = "2"
+log = "0.4"
+uuid = { version = "1", features = ["v4"] }
+
+[target."cfg(not(any(target_os = \"android\", target_os = \"ios\")))".dependencies]
+tauri-plugin-global-shortcut = "2.3.1"
+tauri-plugin-screenshots = "2.2.0"
+window-vibrancy = "0.7.1"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
