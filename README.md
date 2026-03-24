@@ -286,10 +286,6 @@ shot.style is licensed under the **MIT License**.
 
 # Credits
 
-## Acknowledgements
-
-Built with Tauri, React, Vitest, and a shared desktop rendering pipeline.
-
-Created by the shot.style maintainers.
+Created by webadderall
 
 ---
