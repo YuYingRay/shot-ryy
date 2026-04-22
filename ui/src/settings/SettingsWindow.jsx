@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 import SettingsModal from '../../../components/dialogs/SettingsModal.jsx'
 import { ThemeProvider } from '../../../components/context/ThemeContext.jsx'
+import { I18nProvider } from '../../../components/context/I18nContext.js'
 
 import { defaultShortcuts } from '../../../utils/platform/preferences'
 import { getJson, setJson } from '../../../utils/platform/safeStorage'
@@ -62,17 +63,19 @@ export default function SettingsWindow() {
   }, [options])
 
   return (
-    <ThemeProvider>
-      <SettingsModal
-          isOpen
-          shortcuts={shortcuts}
-          options={modalOptions}
-          setOptions={setOptions}
-          autoHideEnabled={autoHideEnabled}
-          onSetAutoHideEnabled={setAutoHideEnabled}
-          onSaveShortcuts={onSaveShortcuts}
-          onClose={onClose}
-        />
-    </ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
+        <SettingsModal
+            isOpen
+            shortcuts={shortcuts}
+            options={modalOptions}
+            setOptions={setOptions}
+            autoHideEnabled={autoHideEnabled}
+            onSetAutoHideEnabled={setAutoHideEnabled}
+            onSaveShortcuts={onSaveShortcuts}
+            onClose={onClose}
+          />
+      </ThemeProvider>
+    </I18nProvider>
   )
 }

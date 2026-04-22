@@ -6,9 +6,11 @@ import { defaultShortcuts } from '../utils/platform/preferences';
 import { analyzeShortcuts, normalizeShortcuts } from '../utils/platform/shortcuts';
 import { comboFromKeyboardEvent, formatComboForDisplay, isValidCombo, normalizeCombo } from '../utils/platform/keybinds';
 
+const isWindows = typeof navigator !== 'undefined' && /Win/i.test(navigator.platform || '');
+
 const DEFAULT_SETTINGS = Object.freeze({
   hideAppWhenUnfocused: true,
-  keepAppInTray: true,
+  keepAppInTray: !isWindows,
   hideWindowOnLaunch: false,
   openAtLogin: false,
   hideDockIconWhenHidden: false,

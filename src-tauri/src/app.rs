@@ -377,6 +377,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
   {
     use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
     use tauri::tray::{TrayIconBuilder, TrayIconEvent};
+    use tauri::MouseButton;
 
     // Keep the app running in the menu bar (tray) when the window is closed.
     // Provide a small tray menu to reopen or quit.
@@ -409,6 +410,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
     let _tray = TrayIconBuilder::new()
       .menu(&tray_menu)
       .icon(icon)
+      .tooltip("shot.style")
       .on_menu_event(|app, event| {
         match event.id().as_ref() {
           "tray-show" => {
@@ -428,7 +430,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
         }
       })
       .on_tray_icon_event(|tray, event| {
-        if let TrayIconEvent::Click { .. } = event {
+        if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
           show_main_window_and_focus(&tray.app_handle());
         }
       })
@@ -456,6 +458,11 @@ pub fn handle_window_event(window: &tauri::Window, event: &WindowEvent) {
     if keep_in_tray {
       let _ = window.hide();
       api.prevent_close();
+    } else {
+      #[cfg(target_os = "windows")]
+      {
+        window.app_handle().exit(0);
+      }
     }
   }
 

@@ -8,9 +8,11 @@ import { comboFromKeyboardEvent, formatComboForDisplay, isValidCombo, normalizeC
 import { useI18n } from '../context/I18nContext';
 import { supported } from '../../utils/core/i18nStrings';
 
+const isWindows = typeof navigator !== 'undefined' && /Win/i.test(navigator.platform || '');
+
 const DEFAULT_SETTINGS = Object.freeze({
   hideAppWhenUnfocused: true,
-  keepAppInTray: true,
+  keepAppInTray: !isWindows,
   hideWindowOnLaunch: false,
   openAtLogin: false,
   hideDockIconWhenHidden: false,
