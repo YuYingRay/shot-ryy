@@ -1,9 +1,11 @@
 // Modal dialog for naming and saving a new preset.
 import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 
 export default function PresetSaveDialog() {
+  const { t } = useI18n()
   const {
     presetNamePromptOpen, setPresetNamePromptOpen,
     presetNameDraft, setPresetNameDraft,
@@ -19,7 +21,7 @@ export default function PresetSaveDialog() {
     const id = `user-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`
     setUserPresets((prev) => [...prev, { id, name, snapshot }])
     setActivePresetId(id)
-    pushToast(`Preset saved: ${name}`, { variant: 'success' })
+    pushToast(`${t('presetSaved')}: ${name}`, { variant: 'success' })
     setPresetNamePromptOpen(false)
   }
 
@@ -42,12 +44,12 @@ export default function PresetSaveDialog() {
           className="relative rounded-[12px] shadow-[0_8px_30px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.08)] p-5 w-[320px] flex flex-col gap-4 shotstyle-panel"
           style={{ backgroundColor: 'rgba(28,28,28,0.95)' }}
         >
-          <div className="text-[13px] font-inter font-medium text-white">Save Preset</div>
-          <div className="text-[11px] font-inter font-light text-white/50">Give your preset a name to save the current settings.</div>
+          <div className="text-[13px] font-inter font-medium text-white">{t('saveCurrentSettingsAsPreset')}</div>
+          <div className="text-[11px] font-inter font-light text-white/50">{t('nameThisPreset')}</div>
           <input
             autoFocus
             type="text"
-            placeholder="My preset"
+            placeholder={t('presetName')}
             className="w-full h-[36px] bg-[#232323] rounded-[8px] text-[13px] font-inter font-light text-white px-3 border border-white/[0.08] outline-none focus:border-[#7700FF] transition-colors placeholder:text-white/25"
             value={presetNameDraft}
             onChange={(e) => setPresetNameDraft(e.target.value)}
@@ -62,7 +64,7 @@ export default function PresetSaveDialog() {
               className="h-[32px] px-4 text-[12px] font-inter font-light text-white/70 rounded-[8px] hover:bg-white/[0.06] transition-colors"
               onClick={() => setPresetNamePromptOpen(false)}
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               type="button"
@@ -70,7 +72,7 @@ export default function PresetSaveDialog() {
               disabled={!presetNameDraft.trim()}
               onClick={save}
             >
-              Save
+              {t('save')}
             </button>
           </div>
         </motion.div>

@@ -1,6 +1,8 @@
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 
 export default function PresetSelectorTopRight() {
+  const { t } = useI18n()
   const {
     isWindows,
     activePresetId, setActivePresetId,
@@ -24,7 +26,7 @@ export default function PresetSelectorTopRight() {
           aria-hidden="true"
         >
           <span className="truncate">
-            {activePresetId === 'default' ? 'Default' : activePresetId === 'current' ? 'Current' : (userPresets.find((p) => p.id === activePresetId)?.name || 'Default')}
+            {activePresetId === 'default' ? t('default') : activePresetId === 'current' ? t('current') : (userPresets.find((p) => p.id === activePresetId)?.name || t('default'))}
           </span>
           <span className="text-white/60 flex-shrink-0">▾</span>
         </button>
@@ -46,14 +48,14 @@ export default function PresetSelectorTopRight() {
               if (preset) applyPresetSnapshot(preset.snapshot)
             }
           }}
-          aria-label="Preset selector"
+          aria-label={t('presets')}
         >
-          <option value="default">Default</option>
-          <option value="current">Current</option>
+          <option value="default">{t('default')}</option>
+          <option value="current">{t('current')}</option>
           {userPresets.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
-          <option value="__save_new__">Save current as preset…</option>
+          <option value="__save_new__">{t('saveCurrentSettingsAsPreset')}</option>
         </select>
       </div>
     </div>

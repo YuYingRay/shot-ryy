@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useI18n } from '../../../components/context/I18nContext'
 import { installTauriApi } from '../../../utils/platform/tauriApi'
 import { trimMacOsWindowScreenshotDataUrl } from '../../../utils/export/imageProcessor'
 import { defaultShortcuts } from '../../../utils/platform/preferences'
@@ -17,6 +18,7 @@ export function useScreenshotCapture({
   rootFocusRef,
   pushToast,
 }) {
+  const { t } = useI18n()
   useEffect(() => {
     let offCaptured = null
     let offError = null
@@ -75,9 +77,9 @@ export function useScreenshotCapture({
           if (shouldAutoCopy && src.startsWith('data:image/') && typeof api?.writeClipboardImage === 'function') {
             try {
               await api.writeClipboardImage(src)
-              pushToast('Copied screenshot to clipboard', { variant: 'success' })
+              pushToast(t('copiedToClipboard'), { variant: 'success' })
             } catch (copyErr) {
-              pushToast(`Copy failed: ${copyErr?.message || String(copyErr)}`, { variant: 'error', durationMs: 4200 })
+              pushToast(`${t('copyFailed')}: ${copyErr?.message || String(copyErr)}`, { variant: 'error', durationMs: 4200 })
             }
           }
         }

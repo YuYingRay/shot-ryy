@@ -3,9 +3,11 @@ import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, PenLine, Square, Circle, Type, RotateCcw } from 'lucide-react'
 import { CircleOneIcon } from './AppHelpers'
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 
 export default function AnnotationBar() {
+  const { t } = useI18n()
   const {
     annotationBarRef, annotationBarLeft,
     annotationTool, setAnnotationTool,
@@ -76,7 +78,7 @@ export default function AnnotationBar() {
             type="button"
             onClick={() => setShapeMode('rect')}
             className="h-full flex items-center"
-            title="Rectangle"
+            title={t('shapeRectangle')}
           >
             <div className={(shapeMode === 'rect' ? 'bg-[#7700FF]' : 'bg-transparent hover:bg-[#232323]') + ' rounded-[6px] px-[6px] py-[7px] transition-colors'}>
               <Square size={14} className="text-white" />
@@ -86,7 +88,7 @@ export default function AnnotationBar() {
             type="button"
             onClick={() => setShapeMode('ellipse')}
             className="h-full flex items-center"
-            title="Ellipse"
+            title={t('shapeEllipse')}
           >
             <div className={(shapeMode === 'ellipse' ? 'bg-[#7700FF]' : 'bg-transparent hover:bg-[#232323]') + ' rounded-[6px] px-[6px] py-[7px] transition-colors'}>
               <Circle size={14} className="text-white" />
@@ -108,7 +110,7 @@ export default function AnnotationBar() {
 
       <div className="h-full px-[4px] flex items-center">
           <input
-            aria-label="Annotation color"
+            aria-label={t('penColor')}
             type="color"
             value={annotationColor}
             onChange={(e) => setAnnotationColor(e.target.value)}
@@ -120,8 +122,8 @@ export default function AnnotationBar() {
         type="button"
         className="h-full px-[4px] flex items-center"
         onClick={clearAnnotations}
-        title="Clear all annotations"
-        aria-label="Clear all annotations"
+        title={t('clear')}
+        aria-label={t('clear')}
       >
         <div className="bg-transparent hover:bg-[#232323] rounded-full w-[34px] h-[34px] grid place-items-center">
           <RotateCcw size={16} className="text-white" />

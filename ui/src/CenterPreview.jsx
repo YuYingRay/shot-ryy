@@ -2,9 +2,11 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import ImageDisplay from '../../components/editor/ImageDisplay.jsx'
 import { defaultShortcuts } from '../../utils/platform/preferences'
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 
 export default function CenterPreview() {
+  const { t } = useI18n()
   const {
     fitViewportRef,
     fitScale,
@@ -80,15 +82,15 @@ export default function CenterPreview() {
             <div className="w-full max-w-[1120px] mx-auto text-white">
               <div className="space-y-5">
                 {[
-                  { key: 'screenshotRegion', label: 'Take screenshot with' },
-                  { key: 'screenshotRegionCopy', label: 'Take screenshot and copy result with' },
+                  { key: 'screenshotRegion', labelKey: 'settingsCaptureRegion' },
+                  { key: 'screenshotRegionCopy', labelKey: 'settingsCaptureRegionCopy' },
                 ].map((row) => {
                   const isRecording = shortcutRecordingKey === row.key
                   const combo = shortcuts?.[row.key] || defaultShortcuts?.[row.key] || ''
                   return (
                     <div key={row.key} className="flex items-center justify-between gap-4 rounded-[12px] px-1 py-0.5">
                       <div className="flex items-center gap-4 min-w-0">
-                        <span className="text-[18px] leading-none font-inter font-light text-white/90 whitespace-nowrap">{row.label}</span>
+                        <span className="text-[18px] leading-none font-inter font-light text-white/90 whitespace-nowrap">{t(row.labelKey)}</span>
                         <span className="inline-flex h-[34px] items-center rounded-[999px] bg-[#0F1116] border border-white/12 px-3 text-[18px] leading-none font-mono tracking-wide text-white/95 shadow-[0_6px_20px_rgba(0,0,0,0.26),inset_0_0_0_1px_rgba(255,255,255,0.03)]">
                           {formatShortcutLabel(combo)}
                         </span>
@@ -103,7 +105,7 @@ export default function CenterPreview() {
                         }
                         onClick={() => setShortcutRecordingKey((prev) => (prev === row.key ? null : row.key))}
                       >
-                        {isRecording ? 'Press keys…' : 'Change'}
+                        {isRecording ? t('shortcutPressKeysEllipsis') : t('settingsChange')}
                       </button>
                     </div>
                   )
@@ -117,7 +119,7 @@ export default function CenterPreview() {
                     className="shotstyle-footer-btn bg-[#7700FF] font-inter font-light text-white shadow-[0_12px_28px_rgba(119,0,255,0.35)]"
                     onClick={takeScreenshot}
                   >
-                    Take screenshot
+                    {t('settingsCaptureRegion')}
                   </motion.button>
                 </div>
               </div>

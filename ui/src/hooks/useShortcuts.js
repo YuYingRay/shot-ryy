@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useI18n } from '../../../components/context/I18nContext'
 import { defaultShortcuts } from '../../../utils/platform/preferences'
 import { analyzeShortcuts, normalizeShortcuts } from '../../../utils/platform/shortcuts'
 import { comboFromKeyboardEvent, formatComboForDisplay, isTypingContext, isValidCombo, normalizeCombo } from '../../../utils/platform/keybinds'
@@ -8,6 +9,7 @@ import { getJson, setJson } from '../../../utils/platform/safeStorage'
  * Manages keyboard shortcuts state and their effects.
  */
 export function useShortcuts({ copyOutput, saveOutput, saveToFolder, pushToast }) {
+  const { t } = useI18n()
   const [shortcuts, setShortcuts] = useState(() => normalizeShortcuts(getJson('settings.shortcuts', defaultShortcuts)))
   const [shortcutRecordingKey, setShortcutRecordingKey] = useState(null)
 
@@ -29,7 +31,7 @@ export function useShortcuts({ copyOutput, saveOutput, saveToFolder, pushToast }
 
       const combo = normalizeCombo(comboFromKeyboardEvent(event))
       if (!combo || !isValidCombo(combo)) {
-        pushToast('Use a valid shortcut combination', { variant: 'error', durationMs: 2600 })
+        pushToast(t('shortcutInvalidCombo'), { variant: 'error', durationMs: 2600 })
         return
       }
 
@@ -38,7 +40,7 @@ export function useShortcuts({ copyOutput, saveOutput, saveToFolder, pushToast }
       const hasInvalid = Boolean(analysis?.invalid?.[shortcutRecordingKey])
       const hasConflict = Boolean(analysis?.conflicts?.[shortcutRecordingKey])
       if (hasInvalid || hasConflict) {
-        pushToast('Shortcut conflicts with an existing one', { variant: 'error', durationMs: 3200 })
+        pushToast(t('shortcutConflictToast'), { variant: 'error', durationMs: 3200 })
         return
       }
 
@@ -59,7 +61,7 @@ export function useShortcuts({ copyOutput, saveOutput, saveToFolder, pushToast }
       } catch {}
 
       setShortcutRecordingKey(null)
-      pushToast('Shortcut updated', { variant: 'success', durationMs: 2200 })
+      pushToast(t('shortcutUpdated'), { variant: 'success', durationMs: 2200 })
     }
 
     window.addEventListener('keydown', onKeyDown, true)
@@ -68,7 +70,7 @@ export function useShortcuts({ copyOutput, saveOutput, saveToFolder, pushToast }
 
   const formatShortcutLabel = useCallback((combo) => {
     const normalized = normalizeCombo(combo)
-    if (!normalized) return 'Unassigned'
+    if (!normalized) return t('shortcutNotSet')
     const platform = (typeof window !== 'undefined' && window?.platform) ? window.platform : null
     return formatComboForDisplay(normalized, { platform, useSymbols: true }) || normalized
   }, [])

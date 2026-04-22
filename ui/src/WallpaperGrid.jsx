@@ -1,4 +1,5 @@
 import React from 'react'
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 import { canvasAngleDegToCssAngleDeg } from './AppHelpers'
 
@@ -19,6 +20,7 @@ const COLOR_SWATCHES = [
 ]
 
 export default function WallpaperGrid() {
+  const { t } = useI18n()
   const {
     wallpaperType,
     currentWallpaperTileCount,
@@ -45,7 +47,7 @@ export default function WallpaperGrid() {
           if (wallpaperType === 'image') return autoGradients[i] || null
           if (wallpaperType === 'colors') {
             if (i < COLOR_SWATCHES.length) return COLOR_SWATCHES[i] || null
-            if (i === COLOR_SWATCHES.length) return { kind: 'colorPicker', name: 'Custom', hex: colorPickerHex }
+            if (i === COLOR_SWATCHES.length) return { kind: 'colorPicker', name: t('customColorName'), hex: colorPickerHex }
             return null
           }
           return null
@@ -196,7 +198,7 @@ export default function WallpaperGrid() {
                 </div>
                 <input
                   type="color"
-                  aria-label="Custom color"
+                  aria-label={t('customColorAria')}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   value={String(colorPickerHex || '#7700FF')}
                   onClick={(e) => e.stopPropagation()}

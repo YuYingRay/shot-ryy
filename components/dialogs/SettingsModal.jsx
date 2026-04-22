@@ -23,25 +23,25 @@ const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const GENERAL_OPTIONS = [
-  { key: 'hideAppWhenUnfocused', label: 'Hide app when unfocused' },
-  { key: 'keepAppInTray', label: 'Keep app in tray' },
-  { key: 'hideWindowOnLaunch', label: 'Hide window on launch' },
-  { key: 'openAtLogin', label: 'Open at login' },
-  { key: 'hideDockIconWhenHidden', label: 'Hide dock icon when app hidden' },
+  { key: 'hideAppWhenUnfocused', labelKey: 'settingsHideAppWhenUnfocused' },
+  { key: 'keepAppInTray', labelKey: 'settingsKeepAppInTray' },
+  { key: 'hideWindowOnLaunch', labelKey: 'settingsHideWindowOnLaunch' },
+  { key: 'openAtLogin', labelKey: 'settingsOpenAtLogin' },
+  { key: 'hideDockIconWhenHidden', labelKey: 'settingsHideDockIconWhenHidden' },
 ];
 
 const CLOSE_AFTER_OPTIONS = [
-  { key: 'closeAfterCopy', label: 'Copying image to clipboard' },
-  { key: 'closeAfterSave', label: 'Saving image' },
-  { key: 'closeAfterSaveToFolder', label: 'Saving to folder' },
+  { key: 'closeAfterCopy', labelKey: 'settingsCopyingImageToClipboard' },
+  { key: 'closeAfterSave', labelKey: 'settingsSavingImage' },
+  { key: 'closeAfterSaveToFolder', labelKey: 'settingsSavingToFolder' },
 ];
 
 const SHORTCUT_ROWS = [
-  { key: 'copy', label: 'Copy image', scope: 'In app' },
-  { key: 'save', label: 'Save image', scope: 'In app' },
-  { key: 'saveToFolder', label: 'Save to folder', scope: 'In app' },
-  { key: 'screenshotRegion', label: 'Capture region', scope: 'Global' },
-  { key: 'screenshotRegionCopy', label: 'Capture + copy output', scope: 'Global' },
+  { key: 'copy', labelKey: 'settingsCopyImage', scopeKey: 'shortcutScopeInApp' },
+  { key: 'save', labelKey: 'settingsSaveImage', scopeKey: 'shortcutScopeInApp' },
+  { key: 'saveToFolder', labelKey: 'settingsSaveToFolder', scopeKey: 'shortcutScopeInApp' },
+  { key: 'screenshotRegion', labelKey: 'settingsCaptureRegion', scopeKey: 'shortcutScopeGlobal' },
+  { key: 'screenshotRegionCopy', labelKey: 'settingsCaptureRegionCopy', scopeKey: 'shortcutScopeGlobal' },
 ];
 
 const loadGeneralSettings = () => {
@@ -61,7 +61,8 @@ const loadShortcutSettings = () => {
 };
 
 function ShortcutChip({ combo }) {
-  const shown = formatComboForDisplay(combo, { useSymbols: true }) || 'Unassigned';
+  const { t } = useI18n();
+  const shown = formatComboForDisplay(combo, { useSymbols: true }) || t('shortcutNotSet');
   return <span className="rounded-[8px] bg-white/5 px-2.5 py-1 text-[12px] text-white">{shown}</span>;
 }
 
@@ -87,7 +88,7 @@ export default function SettingsModal({
   onSaveShortcuts,
   onChangeGeneralSettings,
 }) {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, t } = useI18n();
 
   const [settings, setSettings] = useState(loadGeneralSettings);
   const [shortcutDraft, setShortcutDraft] = useState(loadShortcutSettings);
@@ -233,7 +234,7 @@ export default function SettingsModal({
     const result = analyzeShortcuts(normalized);
 
     if (result.hasIssues) {
-      setShortcutError('Fix shortcut conflicts/invalid combinations before saving.');
+      setShortcutError(t('shortcutFixInvalidBeforeSave'));
       return;
     }
 
@@ -312,7 +313,7 @@ export default function SettingsModal({
       <div
         className="absolute inset-0 bg-black/55"
         onClick={() => { try { onClose && onClose(); } catch {} }}
-        aria-label="Close settings overlay"
+        aria-label={t('closeSettings')}
       />
 
       <div
@@ -336,17 +337,17 @@ export default function SettingsModal({
         }}
       >
         <div className="flex items-center border-b border-white/10 px-5 py-4">
-          <h2 id="settings-modal-title" className="text-[16px] font-medium">Settings</h2>
+          <h2 id="settings-modal-title" className="text-[16px] font-medium">{t('settings')}</h2>
         </div>
 
         <div className="px-6 py-6">
           <div className="grid grid-cols-2 gap-5 items-start">
             {/* Left column — General */}
-            <Section title="General">
+            <Section title={t('settingsGeneral')}>
               <div className="space-y-1">
                 {GENERAL_OPTIONS.map((option) => (
                   <label key={option.key} className="flex cursor-pointer items-center justify-between gap-3 rounded-[8px] px-3 py-2 text-[13px] hover:bg-white/5 transition-colors">
-                    <span className="text-white/90">{option.label}</span>
+                    <span className="text-white/90">{t(option.labelKey)}</span>
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-[#7c3aed]"
@@ -356,7 +357,7 @@ export default function SettingsModal({
                   </label>
                 ))}
                 <div className="pt-2 pb-0.5">
-                  <div className="rounded-[8px] px-3 py-1.5 text-[13px] text-white/50 font-inter">Language</div>
+                  <div className="rounded-[8px] px-3 py-1.5 text-[13px] text-white/50 font-inter">{t('language')}</div>
                 </div>
                 <div className="px-3 py-2">
                   <select
@@ -370,11 +371,11 @@ export default function SettingsModal({
                   </select>
                 </div>
                 <div className="pt-2 pb-0.5">
-                  <div className="rounded-[8px] px-3 py-1.5 text-[13px] text-white/50 font-inter">Close window after</div>
+                  <div className="rounded-[8px] px-3 py-1.5 text-[13px] text-white/50 font-inter">{t('settingsCloseWindowAfter')}</div>
                 </div>
                 {CLOSE_AFTER_OPTIONS.map((option) => (
                   <label key={option.key} className="flex cursor-pointer items-center justify-between gap-3 rounded-[8px] px-3 py-2 text-[13px] hover:bg-white/5 transition-colors">
-                    <span className="text-white/90">{option.label}</span>
+                    <span className="text-white/90">{t(option.labelKey)}</span>
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-[#7c3aed]"
@@ -387,7 +388,7 @@ export default function SettingsModal({
             </Section>
 
             {/* Right column — Shortcuts */}
-            <Section title="Shortcuts">
+            <Section title={t('keyboardShortcuts')}>
               <div className="space-y-2">
                 {SHORTCUT_ROWS.map((row) => {
                   const invalid = analysis.invalid?.[row.key];
@@ -396,8 +397,8 @@ export default function SettingsModal({
                     <div key={row.key} className="rounded-[8px] px-3 py-2 hover:bg-white/5 transition-colors">
                       <div className="mb-1.5 flex items-center justify-between gap-3">
                         <div>
-                          <div className="text-[12px] text-white">{row.label}</div>
-                          <div className="text-[11px] text-white/50">{row.scope}</div>
+                          <div className="text-[12px] text-white">{t(row.labelKey)}</div>
+                          <div className="text-[11px] text-white/50">{t(row.scopeKey)}</div>
                         </div>
                         <div className="flex items-center gap-2">
                           <ShortcutChip combo={shortcutDraft[row.key]} />
@@ -409,7 +410,7 @@ export default function SettingsModal({
                               setShortcutError('');
                             }}
                           >
-                            {recordingKey === row.key ? 'Press keys…' : 'Change'}
+                            {recordingKey === row.key ? t('shortcutPressKeysEllipsis') : t('settingsChange')}
                           </button>
                           <button
                             type="button"
@@ -420,7 +421,7 @@ export default function SettingsModal({
                               setShortcutError('');
                             }}
                           >
-                            Reset
+                            {t('reset')}
                           </button>
                         </div>
                       </div>
@@ -430,7 +431,7 @@ export default function SettingsModal({
                   );
                 })}
                 <div className="flex items-center justify-between gap-2 pt-1">
-                  <div className="text-[11px] text-white/45">Press Esc while recording to cancel.</div>
+                  <div className="text-[11px] text-white/45">{t('settingsPressEscToCancel')}</div>
                   <button
                     type="button"
                     className="rounded-[8px] bg-white/5 px-2.5 py-1 text-[11px] text-white/90 hover:bg-white/10"
@@ -440,12 +441,12 @@ export default function SettingsModal({
                       setShortcutError('');
                     }}
                   >
-                    Reset all
+                    {t('settingsResetAll')}
                   </button>
                 </div>
                 {(shortcutError || analysis.hasIssues) && (
                   <div className="rounded-[8px] border border-amber-400/30 bg-amber-500/10 px-2.5 py-2 text-[11px] text-amber-200">
-                    {shortcutError || 'Resolve shortcut conflicts before saving.'}
+                    {shortcutError || t('shortcutFixInvalidBeforeSave')}
                   </div>
                 )}
               </div>
@@ -459,7 +460,7 @@ export default function SettingsModal({
             className="shotstyle-footer-btn bg-[#7700FF] font-inter font-light text-white"
             onClick={saveAndClose}
           >
-            Done
+            {t('settingsDone')}
           </button>
         </div>
       </div>

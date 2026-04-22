@@ -3,6 +3,7 @@ import './App.css'
 import { AnimatePresence, motion } from 'framer-motion'
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ThemeProvider } from '../../components/context/ThemeContext.jsx'
+import { useI18n } from '../../components/context/I18nContext'
 import SettingsModal from '../../components/dialogs/SettingsModal.jsx'
 import { normalizeShortcuts } from '../../utils/platform/shortcuts'
 import { getJson, setJson } from '../../utils/platform/safeStorage'
@@ -41,6 +42,7 @@ import osWin2Thumb from '../os-mockup-win-2-thumb.png'
 import osSafari1Thumb from '../os-mockup-safari-1-thumb.png'
 
 const App = () => {
+  const { t } = useI18n()
   // Platform detection
   const [isTauri, setIsTauri] = useState(false)
   const [isWindows, setIsWindows] = useState(false)
@@ -519,9 +521,9 @@ const App = () => {
         wallpaper: { filePath: dataUrl, assetUrl: dataUrl, thumbUrl: dataUrl, source: 'custom', name: file.name || 'Custom' },
         gradient: null, blobGradient: null, color: null,
       })
-      pushToast('Custom wallpaper loaded', { variant: 'success' })
+      pushToast(t('customWallpaperLoaded'), { variant: 'success' })
     } catch (err) {
-      pushToast(`Wallpaper upload failed: ${err?.message || String(err)}`, { variant: 'error', durationMs: 3500 })
+      pushToast(`${t('customWallpaperFailed')}: ${err?.message || String(err)}`, { variant: 'error', durationMs: 3500 })
     } finally {
       const api = window?.tauriAPI
       if (autoHideSuspendedForFileDialogRef.current && typeof api?.setAutoHideEnabled === 'function') {
@@ -542,13 +544,13 @@ const App = () => {
   // Wallpaper tab config
   const activeWallpaperColor = '#7700FF'
   const wallpaperTabs = [
-    { id: 'system', label: 'System' },
-    { id: 'gradients', label: 'Gradient' },
-    { id: 'colors', label: 'Color' },
-    { id: 'image', label: 'Auto' },
+    { id: 'system', label: t('categorySystemWallpapers') },
+    { id: 'gradients', label: t('categoryGradients') },
+    { id: 'colors', label: t('background') },
+    { id: 'image', label: t('autoLayout') },
   ]
-  const wallpaperGroupTitles = { system: 'System Wallpapers', gradients: 'Gradients', colors: 'Colors', image: 'Auto' }
-  const currentWallpaperGroup = { title: wallpaperGroupTitles[wallpaperType] || 'Wallpapers' }
+  const wallpaperGroupTitles = { system: t('categorySystemWallpapers'), gradients: t('categoryGradients'), colors: t('background'), image: t('autoLayout') }
+  const currentWallpaperGroup = { title: wallpaperGroupTitles[wallpaperType] || t('background') }
   const currentWallpaperTileCount = (() => {
     if (wallpaperType === 'system') return Math.max(0, systemWallpapers.length)
     if (wallpaperType === 'gradients') return Math.max(56, algorithmGradients.length)
@@ -703,20 +705,20 @@ const App = () => {
 
             <div className="shotstyle-toast-stack" aria-live="polite" aria-relevant="additions removals">
               <AnimatePresence>
-                {toasts.map((t) => (
+                {toasts.map((toast) => (
                   <motion.div
-                    key={t.id}
+                    key={toast.id}
                     initial={{ opacity: 0, y: 16, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, x: 60, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
                     className="shotstyle-toast"
-                    data-variant={t.variant || 'success'}
+                    data-variant={toast.variant || 'success'}
                     role="status"
-                    onClick={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))}
-                    title="Dismiss"
+                    onClick={() => setToasts((prev) => prev.filter((x) => x.id !== toast.id))}
+                    title={t('dismiss')}
                   >
-                    {t.message}
+                    {toast.message}
                   </motion.div>
                 ))}
               </AnimatePresence>

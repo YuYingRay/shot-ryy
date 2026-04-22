@@ -2,6 +2,7 @@ import React from 'react'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { ChevronDown, RotateCcw } from 'lucide-react'
 import { RangeWithTooltip } from '@/components/RangeWithTooltip'
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 import { AspectRatioDropdown } from './AppHelpers'
 import WallpaperGrid from './WallpaperGrid'
@@ -115,6 +116,8 @@ export default function LeftSidebar() {
     handleTransformChange,
   } = useAppContext()
 
+  const { t } = useI18n()
+
   const topPaddingPx = isTauri && isMac ? 52 : 16
 
   return (
@@ -140,7 +143,7 @@ export default function LeftSidebar() {
         className="w-full bg-[#2C2C2C] rounded-[5px] text-xs font-inter font-light text-white cursor-pointer self-center py-[7px]"
         onClick={triggerUploadCustomWallpaper}
       >
-        Upload custom wallpaper
+        {t('uploadCustomWallpaper')}
       </button>
       <LayoutGroup>
         <div className="mt-3 w-full rounded-[8px] bg-[#141414] p-[2px] flex gap-[2px]">
@@ -185,24 +188,24 @@ export default function LeftSidebar() {
       {wallpaperType === 'system' && (systemWallpapersStatus.error || systemWallpapers.length === 0) && (
         <div className="text-[10px] font-inter font-light text-white/60 mt-1">
           {systemWallpapersStatus.error
-            ? `Failed to load: ${systemWallpapersStatus.error}`
-            : 'No system wallpapers found.'}
+            ? t('systemWallpapersFailed', { error: systemWallpapersStatus.error })
+            : t('noSystemWallpapers')}
         </div>
       )}
       {wallpaperType === 'system' && systemWallpaperLoadFailures.size > 0 && (
         <div className="text-[10px] font-inter font-light text-white/60 mt-1">
-          {systemWallpaperLoadFailures.size} thumbnail(s) failed to load (see console).
+          {t('thumbnailsFailedToLoad', { count: systemWallpaperLoadFailures.size })}
         </div>
       )}
       <WallpaperGrid />
 
       {wallpaperType === 'gradients' && (
         <div className="mt-4">
-          <div className="text-xs font-inter font-light text-white mb-2">Background picker</div>
+          <div className="text-xs font-inter font-light text-white mb-2">{t('background')}</div>
           <div className="flex flex-col gap-2">
             {([
-              { key: 'colorStart', label: 'Start' },
-              { key: 'colorEnd', label: 'End' },
+              { key: 'colorStart', label: t('gradientStart') },
+              { key: 'colorEnd', label: t('gradientEnd') },
             ]).map((row) => {
               const current = String(customGradient?.[row.key] || '');
               const normalized = isProbablyHexColor(current) ? normalizeHexColorInput(current) : null;
@@ -259,7 +262,7 @@ export default function LeftSidebar() {
             })}
 
             <div className="flex items-center gap-[7px]">
-              <div className="w-[34px] text-[10px] font-inter font-light text-white/70 shrink-0">Angle</div>
+              <div className="w-[34px] text-[10px] font-inter font-light text-white/70 shrink-0">{t('gradientAngle')}</div>
               <input
                 type="range"
                 min={0}
@@ -273,7 +276,7 @@ export default function LeftSidebar() {
                   setBackgroundSelection({ type: 'gradient', gradient: nextCustom, gradientPresetId: null, blobGradient: null, wallpaper: null, color: null });
                 }}
                 className="flex-1 min-w-0 h-[3px] accent-[#7700FF] cursor-pointer"
-                aria-label="Gradient angle"
+                aria-label={t('gradientAngleAria')}
               />
               <input
                 type="number"
@@ -288,7 +291,7 @@ export default function LeftSidebar() {
                   setBackgroundSelection({ type: 'gradient', gradient: nextCustom, gradientPresetId: null, blobGradient: null, wallpaper: null, color: null });
                 }}
                 className="w-[48px] h-[25px] bg-[#2C2C2C] rounded-[7px] text-[11px] font-inter font-light text-white text-center border border-white/10 shrink-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                aria-label="Gradient angle degrees"
+                aria-label={t('gradientAngleDegreesAria')}
               />
               <span className="text-[10px] font-inter font-light text-white/50 shrink-0">°</span>
             </div>
@@ -306,7 +309,7 @@ export default function LeftSidebar() {
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
             className="flex justify-between items-center mt-2">
-            <div className="text-xs font-inter font-light text-[#757575]">Custom</div>
+            <div className="text-xs font-inter font-light text-[#757575]">{t('custom')}</div>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -318,7 +321,7 @@ export default function LeftSidebar() {
                   setCustomRatio((prev) => ({ ...prev, w }));
                 }}
                 className="bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white px-2 py-1 w-[62px]"
-                aria-label="Custom ratio width"
+                aria-label={t('customRatioWidthAria')}
               />
               <span className="text-xs font-inter font-light text-white/70">:</span>
               <input
@@ -331,7 +334,7 @@ export default function LeftSidebar() {
                   setCustomRatio((prev) => ({ ...prev, h }));
                 }}
                 className="bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white px-2 py-1 w-[62px]"
-                aria-label="Custom ratio height"
+                aria-label={t('customRatioHeightAria')}
               />
             </div>
           </motion.div>
@@ -339,7 +342,7 @@ export default function LeftSidebar() {
       </AnimatePresence>
 
       <div className="flex justify-between items-center mt-3">
-        <div className="text-xs font-inter font-light text-white">Padding</div>
+        <div className="text-xs font-inter font-light text-white">{t('padding')}</div>
         <RangeWithTooltip
           className={SLIDER_W}
           value={padding}
@@ -350,7 +353,7 @@ export default function LeftSidebar() {
         />
       </div>
       <div className="flex justify-between items-center mt-3">
-        <div className="text-xs font-inter font-light text-white">Inset</div>
+        <div className="text-xs font-inter font-light text-white">{t('inset')}</div>
         <RangeWithTooltip
           className={SLIDER_W}
           value={inset}
@@ -368,20 +371,20 @@ export default function LeftSidebar() {
           checked={autoCropEnabled}
           onChange={(e) => setAutoCropEnabled(!!e.target.checked)}
         />
-        <label htmlFor="autocrop" className="text-xs font-inter font-light text-white cursor-pointer">AutoCrop</label>
+        <label htmlFor="autocrop" className="text-xs font-inter font-light text-white cursor-pointer">{t('autoCrop')}</label>
       </div>
       <div className="text-xs font-inter font-light text-[#757575] pl-5 mt-0.5">
-        Auto crop your screenshots
+        {t('autoCropHelp')}
       </div>
       <div className="text-xs font-inter font-light text-white mt-3">
-        Shadow style
+        {t('shadow')}
       </div>
       <div className="grid grid-cols-4 gap-[8px] mt-[6px] justify-items-start items-start w-full">
         {([
-          { id: 'Hug', label: 'Hug', styleLabel: 'Style 1', thumb: hugShadowThumb },
-          { id: 'Heavy', label: 'Heavy', styleLabel: 'Style 2', thumb: heavyShadowThumb },
-          { id: 'Ambient', label: 'Ambient', styleLabel: 'Style 3', thumb: ambientShadowThumb },
-          { id: 'Custom', label: 'Custom', styleLabel: 'Style 4', thumb: customShadowThumb },
+          { id: 'Hug', label: t('shadowStyleHug'), styleLabel: t('shadowStyle1'), thumb: hugShadowThumb },
+          { id: 'Heavy', label: t('shadowStyleHeavy'), styleLabel: t('shadowStyle2'), thumb: heavyShadowThumb },
+          { id: 'Ambient', label: t('shadowStyleAmbient'), styleLabel: t('shadowStyle3'), thumb: ambientShadowThumb },
+          { id: 'Custom', label: t('shadowStyleCustom'), styleLabel: t('shadowStyle4'), thumb: customShadowThumb },
         ]).map((s) => {
           const isActive = selectedShadowStyle === s.id;
           return (
@@ -406,17 +409,17 @@ export default function LeftSidebar() {
       {selectedShadowStyle === 'Custom' && (
         <div className="mt-2 p-3 rounded-[8px] bg-[#1c1c1c] shadow-[inset_0_0_0_1px_#313131]">
           <div className="flex justify-between items-center mb-2">
-            <div className="text-[11px] font-inter font-light text-white">Custom shadow</div>
+            <div className="text-[11px] font-inter font-light text-white">{t('shadowCustom')}</div>
             <input
               type="color"
               value={customShadow.color}
               onChange={(e) => setCustomShadow((prev) => ({ ...prev, color: String(e.target.value || '#000000') }))}
               className="h-[20px] w-[20px] rounded-full border-0 cursor-pointer"
-              aria-label="Custom shadow color"
+              aria-label={t('customShadowColorAria')}
             />
           </div>
           <div className="flex justify-between items-center mt-2">
-            <div className="text-xs font-inter font-light text-white">X <span className="text-white/60">{Math.round(customShadow.offsetX)}px</span></div>
+            <div className="text-xs font-inter font-light text-white">{t('axisX')} <span className="text-white/60">{Math.round(customShadow.offsetX)}px</span></div>
             <RangeWithTooltip
               className={SLIDER_W}
               min={-80}
@@ -428,7 +431,7 @@ export default function LeftSidebar() {
             />
           </div>
           <div className="flex justify-between items-center mt-2">
-            <div className="text-xs font-inter font-light text-white">Y <span className="text-white/60">{Math.round(customShadow.offsetY)}px</span></div>
+            <div className="text-xs font-inter font-light text-white">{t('axisY')} <span className="text-white/60">{Math.round(customShadow.offsetY)}px</span></div>
             <RangeWithTooltip
               className={SLIDER_W}
               min={-80}
@@ -440,7 +443,7 @@ export default function LeftSidebar() {
             />
           </div>
           <div className="flex justify-between items-center mt-2">
-            <div className="text-xs font-inter font-light text-white">Blur <span className="text-white/60">{Math.round(customShadow.blur)}px</span></div>
+            <div className="text-xs font-inter font-light text-white">{t('shadowBlur')} <span className="text-white/60">{Math.round(customShadow.blur)}px</span></div>
             <RangeWithTooltip
               className={SLIDER_W}
               min={0}
@@ -451,7 +454,7 @@ export default function LeftSidebar() {
             />
           </div>
           <div className="flex justify-between items-center mt-2">
-            <div className="text-xs font-inter font-light text-white">Spread <span className="text-white/60">{Math.round(customShadow.spread)}px</span></div>
+            <div className="text-xs font-inter font-light text-white">{t('shadowSpread')} <span className="text-white/60">{Math.round(customShadow.spread)}px</span></div>
             <RangeWithTooltip
               className={SLIDER_W}
               min={-80}
@@ -463,7 +466,7 @@ export default function LeftSidebar() {
             />
           </div>
           <div className="flex justify-between items-center mt-2">
-            <div className="text-xs font-inter font-light text-white">Opacity <span className="text-white/60">{Math.round(customShadow.opacity * 100)}%</span></div>
+            <div className="text-xs font-inter font-light text-white">{t('shadowOpacity')} <span className="text-white/60">{Math.round(customShadow.opacity * 100)}%</span></div>
             <RangeWithTooltip
               className={SLIDER_W}
               min={0}
@@ -477,7 +480,7 @@ export default function LeftSidebar() {
         </div>
       )}
       <div className="flex justify-between items-center mt-3">
-        <div className="text-xs font-inter font-light text-white">Curve</div>
+        <div className="text-xs font-inter font-light text-white">{t('cornerRadius')}</div>
         <RangeWithTooltip
           className={SLIDER_W}
           value={curve}
@@ -488,7 +491,7 @@ export default function LeftSidebar() {
         />
       </div>
       <div className="flex justify-between items-center mt-3">
-        <div className="text-xs font-inter font-light text-white">Border</div>
+        <div className="text-xs font-inter font-light text-white">{t('borderWidth')}</div>
         <RangeWithTooltip
           className={SLIDER_W}
           value={border}
@@ -499,26 +502,26 @@ export default function LeftSidebar() {
         />
       </div>
       <div className="flex justify-between items-center mt-2">
-        <div className="text-xs font-inter font-light text-white">Border color</div>
+        <div className="text-xs font-inter font-light text-white">{t('borderColorLabel')}</div>
         <input
           type="color"
           value={borderColor}
           onChange={(e) => setBorderColor(normalizeHexColorInput(e.target.value || '#ffffff'))}
           className="h-[20px] w-[20px] rounded-full border-0 cursor-pointer"
-          aria-label="Border color"
+          aria-label={t('borderColorAria')}
         />
       </div>
       <div className="flex items-center justify-between mt-3">
-        <div className="text-xs font-inter font-light text-white">OS Mockup</div>
+        <div className="text-xs font-inter font-light text-white">{t('browserMockup')}</div>
         <button
           type="button"
           className="flex items-center gap-1 text-xs font-inter font-light text-[#757575] hover:text-white/70"
           onClick={() => setSelectedOsMockup('none')}
-          title="Reset OS mockup"
-          aria-label="Reset OS mockup"
+          title={t('reset')}
+          aria-label={t('reset')}
         >
           <RotateCcw size={12} />
-          <span>Reset</span>
+          <span>{t('reset')}</span>
         </button>
       </div>
       <div className="grid grid-cols-5 gap-[6px] mt-[6px] justify-items-start items-start w-full">
@@ -551,13 +554,13 @@ export default function LeftSidebar() {
           value={safariMockupText}
           onChange={(e) => setSafariMockupText(e.target.value)}
           className="w-full mt-3 bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white px-2 py-1"
-          placeholder="Safari text"
-          aria-label="Safari mockup text"
+          placeholder={t('safariTextPlaceholder')}
+          aria-label={t('safariMockupTextAria')}
         />
       )}
 
       <div className="flex justify-between items-center mt-3">
-        <div className="text-xs font-inter font-light text-white">UI scale</div>
+        <div className="text-xs font-inter font-light text-white">{t('uiScale')}</div>
         <RangeWithTooltip
           className={SLIDER_W}
           value={uiScale}
@@ -578,20 +581,20 @@ export default function LeftSidebar() {
           checked={watermarkEnabled}
           onChange={(e) => setWatermarkEnabled(!!e.target.checked)}
         />
-        <label htmlFor="show-watermark" className="text-xs font-inter font-light text-white cursor-pointer">Show watermark</label>
+        <label htmlFor="show-watermark" className="text-xs font-inter font-light text-white cursor-pointer">{t('showWatermark')}</label>
       </div>
       <div className="flex justify-between items-center mt-3">
-        <div className="text-xs font-inter font-light text-white">Position:</div>
+        <div className="text-xs font-inter font-light text-white">{t('positionLabel')}:</div>
         <div className="relative">
           <select className="bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white pl-2 pr-8 py-1 appearance-none" value={watermarkPosition} onChange={(e) => setWatermarkPosition(e.target.value)}>
-            <option value="inside">Inside screenshot</option>
-            <option value="center-bottom">Below screenshot</option>
-            <option value="top-left">Top left</option>
-            <option value="top-right">Top right</option>
-            <option value="center-top">Top center</option>
-            <option value="bottom-left">Bottom left</option>
-            <option value="bottom-right">Bottom right</option>
-            <option value="center-bottom">Bottom center</option>
+            <option value="inside">{t('watermarkPosInside')}</option>
+            <option value="center-bottom">{t('watermarkPosBottomRight')}</option>
+            <option value="top-left">{t('watermarkPosTopLeft')}</option>
+            <option value="top-right">{t('watermarkPosTopRight')}</option>
+            <option value="center-top">{t('watermarkPosCenterTop')}</option>
+            <option value="bottom-left">{t('watermarkPosBottomLeft')}</option>
+            <option value="bottom-right">{t('watermarkPosBottomRight')}</option>
+            <option value="center-bottom">{t('watermarkPosBottomRight')}</option>
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
             <ChevronDown size={20} className="text-white" />
@@ -603,7 +606,7 @@ export default function LeftSidebar() {
         value={watermarkText}
         onChange={(e) => setWatermarkText(e.target.value)}
         className="w-full mt-3 bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white px-2 py-1"
-        placeholder="Made with shot.style"
+        placeholder={t('watermarkPlaceholder')}
       />
       <div className="mt-3 grid grid-cols-2 gap-2 py-2">
         <div className="flex items-center">
@@ -619,7 +622,7 @@ export default function LeftSidebar() {
               setWatermarkShowTwitter(next === 'twitter');
             }}
           />
-          <label htmlFor="twitter-logo" className="text-xs font-inter font-light text-white cursor-pointer">Twitter logo</label>
+          <label htmlFor="twitter-logo" className="text-xs font-inter font-light text-white cursor-pointer">{t('twitterLogo')}</label>
         </div>
         <div className="flex items-center justify-end">
           <input
@@ -634,7 +637,7 @@ export default function LeftSidebar() {
               setWatermarkShowTwitter(next === 'twitter');
             }}
           />
-          <label htmlFor="email-logo" className="text-xs font-inter font-light text-white cursor-pointer">Email logo</label>
+          <label htmlFor="email-logo" className="text-xs font-inter font-light text-white cursor-pointer">{t('emailLogo')}</label>
         </div>
         <div className="flex items-center">
           <input
@@ -649,7 +652,7 @@ export default function LeftSidebar() {
               setWatermarkShowTwitter(next === 'twitter');
             }}
           />
-          <label htmlFor="youtube-logo" className="text-xs font-inter font-light text-white cursor-pointer">Youtube logo</label>
+          <label htmlFor="youtube-logo" className="text-xs font-inter font-light text-white cursor-pointer">{t('youtubeLogo')}</label>
         </div>
         <div className="flex items-center justify-end">
           <input
@@ -659,7 +662,7 @@ export default function LeftSidebar() {
             checked={watermarkShowVerified}
             onChange={(e) => setWatermarkShowVerified(!!e.target.checked)}
           />
-          <label htmlFor="checkmark" className="text-xs font-inter font-light text-white cursor-pointer">Checkmark</label>
+          <label htmlFor="checkmark" className="text-xs font-inter font-light text-white cursor-pointer">{t('checkmark')}</label>
         </div>
       </div>
       <div className="mt-4 rounded-[10px] border border-white/10 bg-[#232323]/70 px-3 py-2">
@@ -668,7 +671,7 @@ export default function LeftSidebar() {
           className="w-full flex justify-between items-center"
           onClick={() => setIsAdvancedOpen((prev) => !prev)}
         >
-          <div className="text-xs font-inter font-light text-white">More position settings</div>
+          <div className="text-xs font-inter font-light text-white">{t('morePositionSettings')}</div>
           <motion.div
             className="text-xs font-inter font-light text-white"
             animate={{ rotate: isAdvancedOpen ? 0 : -90 }}
@@ -687,7 +690,7 @@ export default function LeftSidebar() {
           >
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="text-xs font-inter font-light text-white mb-1">Watermark X</div>
+                <div className="text-xs font-inter font-light text-white mb-1">{t('watermarkOffsetX')}</div>
                 <input
                   type="number"
                   className="w-full bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white px-2 py-1"
@@ -696,7 +699,7 @@ export default function LeftSidebar() {
                 />
               </div>
               <div>
-                <div className="text-xs font-inter font-light text-white mb-1">Watermark Y</div>
+                <div className="text-xs font-inter font-light text-white mb-1">{t('watermarkOffsetY')}</div>
                 <input
                   type="number"
                   className="w-full bg-[#2C2C2C] rounded-[4.5px] text-xs font-inter font-light text-white px-2 py-1"
@@ -707,7 +710,7 @@ export default function LeftSidebar() {
             </div>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between items-center mb-2">
-                <div className="text-xs font-inter font-light text-white">Tilt X</div>
+                <div className="text-xs font-inter font-light text-white">{t('tiltX')}</div>
                 <RangeWithTooltip
                   className={SLIDER_W}
                   min={-50}
@@ -721,7 +724,7 @@ export default function LeftSidebar() {
                 />
               </div>
               <div className="flex justify-between items-center mb-2">
-                <div className="text-xs font-inter font-light text-white">Tilt Y</div>
+                <div className="text-xs font-inter font-light text-white">{t('tiltY')}</div>
                 <RangeWithTooltip
                   className={SLIDER_W}
                   min={-50}
@@ -735,7 +738,7 @@ export default function LeftSidebar() {
                 />
               </div>
               <div className="flex justify-between items-center mb-2">
-                <div className="text-xs font-inter font-light text-white">Rotation</div>
+                <div className="text-xs font-inter font-light text-white">{t('rotation')}</div>
                 <RangeWithTooltip
                   className={SLIDER_W}
                   min={-50}

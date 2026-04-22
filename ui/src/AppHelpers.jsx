@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { isProbablyHexColor, normalizeHexColorInput } from '../../utils/color/colorInput.js'
 import { clamp } from '../../utils/core/math'
+import { useI18n } from '../../components/context/I18nContext'
 
 export const canvasAngleDegToCssAngleDeg = (angleDeg) => {
   const a = Number(angleDeg) || 0
@@ -98,7 +99,7 @@ export function CircleOneIcon({ size = 16 }) {
 /* ── Aspect Ratio Dropdown ────────────────────────────────── */
 
 export const RATIO_OPTIONS = [
-  { value: 'auto',             label: 'Auto (match image)', w: 0,  h: 0  },
+  { value: 'auto',             label: 'Auto (match image)', labelKey: 'ratioLabelAuto', w: 0,  h: 0  },
   { value: 'aspect-square',    label: '1 : 1',              w: 1,  h: 1  },
   { value: 'aspect-video',     label: '16 : 9',             w: 16, h: 9  },
   { value: 'aspect-[4/3]',     label: '4 : 3',              w: 4,  h: 3  },
@@ -106,14 +107,14 @@ export const RATIO_OPTIONS = [
   { value: 'aspect-[9/16]',    label: '9 : 16',             w: 9,  h: 16 },
   { value: 'aspect-[4/5]',     label: '4 : 5',              w: 4,  h: 5  },
   { value: 'aspect-[2/3]',     label: '2 : 3',              w: 2,  h: 3  },
-  { value: 'custom',           label: 'Custom…',            w: 0,  h: 0  },
-  { value: 'aspect-[1200/627]', label: 'LinkedIn Post (1200×627)', w: 1200, h: 627 },
-  { value: 'aspect-[1200/630]', label: 'Facebook Link (1200×630)', w: 1200, h: 630 },
-  { value: 'aspect-[3/1]',     label: 'X Header (1500×500)', w: 3,  h: 1  },
-  { value: 'aspect-[1600/900]', label: 'Twitter Post Landscape (1600×900)', w: 1600, h: 900 },
-  { value: 'aspect-[1080/1350-twitter]', label: 'Twitter Post Portrait (1080×1350)', w: 1080, h: 1350 },
-  { value: 'aspect-[1080/1920]', label: 'Instagram Story (1080×1920)', w: 1080, h: 1920 },
-  { value: 'aspect-[1080/1350-instagram]', label: 'Instagram Portrait (1080×1350)', w: 1080, h: 1350 },
+  { value: 'custom',           label: 'Custom…',            labelKey: 'ratioLabelCustom', w: 0,  h: 0  },
+  { value: 'aspect-[1200/627]', label: 'LinkedIn Post (1200×627)', labelKey: 'ratioLabelLinkedInPost', w: 1200, h: 627 },
+  { value: 'aspect-[1200/630]', label: 'Facebook Link (1200×630)', labelKey: 'ratioLabelFacebookLink', w: 1200, h: 630 },
+  { value: 'aspect-[3/1]',     label: 'X Header (1500×500)', labelKey: 'ratioLabelXHeader', w: 3,  h: 1  },
+  { value: 'aspect-[1600/900]', label: 'Twitter Post Landscape (1600×900)', labelKey: 'ratioLabelTwitterLandscape', w: 1600, h: 900 },
+  { value: 'aspect-[1080/1350-twitter]', label: 'Twitter Post Portrait (1080×1350)', labelKey: 'ratioLabelTwitterPortrait', w: 1080, h: 1350 },
+  { value: 'aspect-[1080/1920]', label: 'Instagram Story (1080×1920)', labelKey: 'ratioLabelInstagramStory', w: 1080, h: 1920 },
+  { value: 'aspect-[1080/1350-instagram]', label: 'Instagram Portrait (1080×1350)', labelKey: 'ratioLabelInstagramPortrait', w: 1080, h: 1350 },
 ]
 
 const PREVIEW_MAX_W = 22
@@ -179,6 +180,7 @@ export function RatioPreviewRect({ w, h, isAuto, isCustom }) {
 }
 
 export function AspectRatioDropdown({ ratioChoice, setRatioChoice }) {
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const wrapRef = useRef(null)
   const menuRef = useRef(null)
@@ -245,7 +247,7 @@ export function AspectRatioDropdown({ ratioChoice, setRatioChoice }) {
 
   return (
     <div className="flex justify-between items-center mt-5">
-      <div className="text-xs font-inter font-light text-white">Ratio:</div>
+      <div className="text-xs font-inter font-light text-white">{t('ratio')}:</div>
       <div className="relative z-[120]" ref={wrapRef}>
         {/* trigger button */}
         <button
@@ -259,7 +261,7 @@ export function AspectRatioDropdown({ ratioChoice, setRatioChoice }) {
             isAuto={selected.value === 'auto'}
             isCustom={selected.value === 'custom'}
           />
-          <span className="whitespace-nowrap">{selected.label}</span>
+          <span className="whitespace-nowrap">{selected.labelKey ? t(selected.labelKey) : selected.label}</span>
           <ChevronDown
             size={14}
             className={`text-white/60 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
@@ -308,7 +310,7 @@ export function AspectRatioDropdown({ ratioChoice, setRatioChoice }) {
                         isAuto={opt.value === 'auto'}
                         isCustom={opt.value === 'custom'}
                       />
-                      <span className="whitespace-nowrap">{opt.label}</span>
+                      <span className="whitespace-nowrap">{opt.labelKey ? t(opt.labelKey) : opt.label}</span>
                     </button>
                   )
                 })}

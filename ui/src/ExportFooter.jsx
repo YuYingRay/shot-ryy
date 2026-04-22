@@ -2,9 +2,11 @@
 import React from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Folder, Trash2 } from 'lucide-react'
+import { useI18n } from '../../components/context/I18nContext'
 import { useAppContext } from './AppContext'
 
 export default function ExportFooter() {
+  const { t } = useI18n()
   const {
     footerBarRef, footerBarLeft,
     exportBusy, exportDrawerOpen, setExportDrawerOpen,
@@ -36,7 +38,7 @@ export default function ExportFooter() {
               className="shotstyle-footer-btn bg-[#2C2C2C] text-[13px] font-inter font-light text-white gap-1.5 w-[124px]"
               disabled={exportBusy}
               onClick={() => setExportDrawerOpen((prev) => !prev)}
-              title="Export settings"
+              title={t('exportSettings')}
             >
               <span>{exportScale}x</span>
               <span className="text-white/40">•</span>
@@ -56,7 +58,7 @@ export default function ExportFooter() {
               >
                 {/* Scale */}
                 <div>
-                  <div className="text-[11px] font-inter font-light text-white mb-1.5">Scale</div>
+                  <div className="text-[11px] font-inter font-light text-white mb-1.5">{t('exportScale')}</div>
                   <div className="flex gap-1">
                     {[0.5, 1, 1.5, 2, 3].map((s) => (
                       <button
@@ -75,7 +77,7 @@ export default function ExportFooter() {
 
                 {/* Format */}
                 <div>
-                  <div className="text-[11px] font-inter font-light text-white mb-1.5">Format</div>
+                  <div className="text-[11px] font-inter font-light text-white mb-1.5">{t('exportFileType')}</div>
                   <div className="flex gap-1">
                     {['png', 'jpeg', 'webp'].map((f) => (
                       <button
@@ -96,7 +98,7 @@ export default function ExportFooter() {
                 {exportFormat !== 'png' && (
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
-                      <div className="text-[11px] font-inter font-light text-white">Quality</div>
+                      <div className="text-[11px] font-inter font-light text-white">{t('exportQualityLabel')}</div>
                       <div className="text-[11px] font-inter font-light text-white">{Math.round(exportQuality * 100)}%</div>
                     </div>
                     <input
@@ -122,7 +124,7 @@ export default function ExportFooter() {
             disabled={exportBusy}
             onClick={copyOutput}
           >
-            Copy
+            {t('copy')}
           </button>
           <button
             type="button"
@@ -131,7 +133,7 @@ export default function ExportFooter() {
             disabled={exportBusy}
             onClick={saveOutput}
           >
-            Save
+            {t('save')}
           </button>
 
           <div className="flex items-stretch rounded-[6px] overflow-hidden bg-[#7700FF]">
@@ -141,9 +143,9 @@ export default function ExportFooter() {
               className={'shotstyle-footer-btn bg-[#7700FF] font-inter font-light text-white rounded-r-none ' + (exportBusy ? 'opacity-60 cursor-not-allowed' : '')}
               disabled={exportBusy}
               onClick={saveToFolder}
-              title={exportFolderPath ? `Save into: ${exportFolderPath}` : 'Save into a chosen folder'}
+              title={exportFolderPath ? `${t('settingsSavingToFolder')}: ${exportFolderPath}` : t('settingsSavingToFolder')}
             >
-              Save to folder
+              {t('settingsSaveToFolder')}
             </button>
             <div aria-hidden className="my-[4px] w-[1px] bg-white/40 self-stretch" />
             <button
@@ -152,8 +154,8 @@ export default function ExportFooter() {
               className={'shotstyle-footer-btn bg-[#7700FF] font-inter font-light text-white rounded-l-none ' + (exportBusy ? 'opacity-60 cursor-not-allowed' : '')}
               disabled={exportBusy}
               onClick={pickExportFolder}
-              title={exportFolderPath ? `Change folder (currently: ${exportFolderPath})` : 'Choose folder'}
-              aria-label="Choose export folder"
+              title={exportFolderPath ? `${t('settingsSavingToFolder')}: ${exportFolderPath}` : t('settingsSavingToFolder')}
+              aria-label={t('settingsSavingToFolder')}
             >
               <Folder size={14} className="text-white" />
             </button>
@@ -165,8 +167,8 @@ export default function ExportFooter() {
             data-shotstyle-react-wired="1"
             className="shotstyle-footer-btn bg-[#2C2C2C] text-white/70 !w-[24px] !p-0"
             onClick={resetCanvas}
-            title="Clear — discard screenshot and return to upload zone"
-            aria-label="Clear canvas"
+            title={t('resetCanvas')}
+            aria-label={t('resetCanvas')}
           >
             <Trash2 size={13} />
           </button>
@@ -178,7 +180,7 @@ export default function ExportFooter() {
         className="shotstyle-footer-btn absolute right-4 bottom-4 bg-[#2C2C2C] font-inter font-light text-white cursor-pointer z-20"
         onClick={openSettings}
       >
-        Settings
+        {t('settings')}
       </button>
     </>
   )

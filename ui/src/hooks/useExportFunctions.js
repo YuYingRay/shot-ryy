@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useI18n } from '../../../components/context/I18nContext'
 import { installTauriApi } from '../../../utils/platform/tauriApi'
 import { trimMacOsWindowScreenshotDataUrl } from '../../../utils/export/imageProcessor'
 import { copyImage as copyImageUtil, createExportableSnapshot, saveImageAdvanced, scaleAndEncodeBlob } from '../../../utils/export/imageProcessor'
@@ -24,6 +25,7 @@ export function useExportFunctions({
   setAnnotationTool,
   rootFocusRef,
 }) {
+  const { t } = useI18n()
   const [exportFolderPath, setExportFolderPath] = useState(() => {
     try {
       return getJson('uiExp.exportFolderPath', null)
@@ -52,15 +54,15 @@ export function useExportFunctions({
     if (!api?.pickDirectory) return null
     let picked = null
     try {
-      picked = await api.pickDirectory({ title: 'Choose export folder' })
+      picked = await api.pickDirectory({ title: t('settingsSavingToFolder') })
     } catch (e) {
-      pushToast(`Failed to pick folder: ${e?.message || String(e)}`, { variant: 'error', durationMs: 3500 })
+      pushToast(`${t('exportFolderPickFailed')}: ${e?.message || String(e)}`, { variant: 'error', durationMs: 3500 })
       return null
     }
     if (picked) {
       try { setJson('uiExp.exportFolderPath', picked) } catch {}
       setExportFolderPath(picked)
-      pushToast('Export folder set', { variant: 'success' })
+      pushToast(t('exportFolderSet'), { variant: 'success' })
       return picked
     }
     return null
@@ -102,7 +104,7 @@ export function useExportFunctions({
     await runWithFrozenPreview(async () => {
       try {
         if (!blob?.src) {
-          pushToast('Nothing to export yet', { variant: 'error' })
+          pushToast(t('nothingToExport'), { variant: 'error' })
           return
         }
 
@@ -136,7 +138,7 @@ export function useExportFunctions({
         const fileName = buildDefaultExportFileName()
         if (api?.saveExportedImageToFolder) {
           await api.saveExportedImageToFolder({ dataUrl, folderPath: folder, fileName })
-          pushToast(`Saved: ${fileName}`, { variant: 'success' })
+          pushToast(`${t('settingsSavingImage')}: ${fileName}`, { variant: 'success' })
           if (generalSettings?.closeAfterSaveToFolder) {
             try { await (getDesktopApi()?.hideMainWindow?.() || appWindow?.hide?.()) } catch {}
           }
@@ -145,14 +147,14 @@ export function useExportFunctions({
 
         if (api?.saveExportedImage) {
           await api.saveExportedImage({ dataUrl, fileName })
-          pushToast(`Saved: ${fileName}`, { variant: 'success' })
+          pushToast(`${t('settingsSavingImage')}: ${fileName}`, { variant: 'success' })
           if (generalSettings?.closeAfterSaveToFolder) {
             try { await (getDesktopApi()?.hideMainWindow?.() || appWindow?.hide?.()) } catch {}
           }
           return
         }
 
-        pushToast('Save not available in this environment', { variant: 'error', durationMs: 3500 })
+        pushToast(t('saveNotAvailable'), { variant: 'error', durationMs: 3500 })
       } catch (e) {
         pushToast(formatExportErrorMessage('Save', e), { variant: 'error', durationMs: 4500 })
       }
@@ -163,16 +165,16 @@ export function useExportFunctions({
     await runWithFrozenPreview(async () => {
       try {
         if (!blob?.src) {
-          pushToast('Nothing to copy yet', { variant: 'error' })
+          pushToast(t('nothingToCopy'), { variant: 'error' })
           return
         }
         const exportEl = getExportElement()
         if (!exportEl) {
-          pushToast('Nothing to copy yet', { variant: 'error' })
+          pushToast(t('nothingToCopy'), { variant: 'error' })
           return
         }
         await copyImageUtil({ current: exportEl }, blob, imageOptions)
-        pushToast('Copied to clipboard', { variant: 'success' })
+        pushToast(t('copiedToClipboard'), { variant: 'success' })
         if (generalSettings?.closeAfterCopy) {
           try { await (getDesktopApi()?.hideMainWindow?.() || appWindow?.hide?.()) } catch {}
         }
@@ -186,12 +188,12 @@ export function useExportFunctions({
     await runWithFrozenPreview(async () => {
       try {
         if (!blob?.src) {
-          pushToast('Nothing to save yet', { variant: 'error' })
+          pushToast(t('nothingToSave'), { variant: 'error' })
           return
         }
         const exportEl = getExportElement()
         if (!exportEl) {
-          pushToast('Nothing to save yet', { variant: 'error' })
+          pushToast(t('nothingToSave'), { variant: 'error' })
           return
         }
         const fileName = buildDefaultExportFileName()
@@ -201,7 +203,7 @@ export function useExportFunctions({
           format: exportFormat,
           quality: exportQuality,
         }, imageOptions)
-        pushToast(`Saved: ${fileName}`, { variant: 'success' })
+        pushToast(`${t('settingsSavingImage')}: ${fileName}`, { variant: 'success' })
         if (generalSettings?.closeAfterSave) {
           try { await (getDesktopApi()?.hideMainWindow?.() || appWindow?.hide?.()) } catch {}
         }
@@ -241,7 +243,7 @@ export function useExportFunctions({
       await installTauriApi()
       const api = window?.tauriAPI
       if (!api?.captureScreenshotToFile) {
-        pushToast('Take screenshot is available in the desktop app', { variant: 'error', durationMs: 3600 })
+        pushToast(t('screenshotDesktopOnly'), { variant: 'error', durationMs: 3600 })
         return
       }
 
@@ -261,7 +263,7 @@ export function useExportFunctions({
         }
       }
     } catch (e) {
-      pushToast(`Take screenshot failed: ${e?.message || String(e)}`, { variant: 'error', durationMs: 4200 })
+      pushToast(`${t('screenshotFailed')}: ${e?.message || String(e)}`, { variant: 'error', durationMs: 4200 })
     }
   }, [applyCapturedSource, pushToast])
 

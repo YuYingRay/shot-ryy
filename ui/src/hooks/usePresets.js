@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useI18n } from '../../../components/context/I18nContext'
 import { isProbablyHexColor, normalizeHexColorInput } from '../../../utils/color/colorInput.js'
 import { sanitizeCustomShadowState } from '../AppHelpers'
 
@@ -20,6 +21,7 @@ export function usePresets({
   setExportScale, setExportFormat, setExportQuality,
   osMockups, pushToast, systemWallpapers, setSelectedSystemWallpaper, defaultBackgroundSelection,
 }) {
+  const { t } = useI18n()
   const capturePresetSnapshot = useCallback(() => {
     return {
       ratioChoice,
@@ -86,7 +88,7 @@ export function usePresets({
       if (osMockups.some((m) => m?.id === nextMockup)) {
         setSelectedOsMockup(nextMockup)
       } else {
-        pushToast(`Preset mockup unavailable: ${nextMockup}`, { variant: 'error', durationMs: 3400 })
+        pushToast(`${t('presetMockupUnavailable')}: ${nextMockup}`, { variant: 'error', durationMs: 3400 })
       }
     }
     if (snap.safariMockupText != null) {
@@ -109,7 +111,7 @@ export function usePresets({
         const nextFilePath = String(nextBackground.wallpaper.filePath)
         const matched = systemWallpapers.find((w) => String(w?.filePath || '') === nextFilePath) || null
         if (!matched) {
-          pushToast('Preset wallpaper is not available on this device', { variant: 'error', durationMs: 3800 })
+          pushToast(t('presetWallpaperUnavailable'), { variant: 'error', durationMs: 3800 })
         } else {
           setSelectedSystemWallpaper({ name: matched.name, filePath: matched.filePath })
           setBackgroundSelection(nextBackground)
