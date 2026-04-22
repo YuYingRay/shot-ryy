@@ -1,7 +1,10 @@
 use std::fs;
 use std::path::Path;
 use std::process::Command;
+use std::os::windows::process::CommandExt;
 use std::sync::Once;
+
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 use tauri::Manager;
 
@@ -21,6 +24,7 @@ pub fn prewarm_capture_interactive_runtime() {
            Add-Type -AssemblyName System.Drawing; \
            [void][System.Windows.Forms.SystemInformation]::VirtualScreen.Width",
         ])
+        .creation_flags(CREATE_NO_WINDOW)
         .output();
     });
   });
@@ -82,6 +86,7 @@ pub fn capture_overlay_screenshot_to_file(app: &tauri::AppHandle) -> Result<Stri
 
   let output = Command::new("powershell")
     .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Sta", "-ExecutionPolicy", "Bypass", "-Command", &script])
+    .creation_flags(CREATE_NO_WINDOW)
     .output()
     .map_err(|e| format!("Failed to run PowerShell screenshot capture: {e}"))?;
 
@@ -153,6 +158,7 @@ Write-Output '{escaped}'"
 
   let output = Command::new("powershell")
     .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Sta", "-ExecutionPolicy", "Bypass", "-Command", &script])
+    .creation_flags(CREATE_NO_WINDOW)
     .output()
     .map_err(|e| format!("Failed to run interactive region capture: {e}"))?;
 
