@@ -308,10 +308,7 @@ fn main() {
     .manage(AutoHideState(AtomicBool::new(false)))
     // Keep app resident in tray by default when main window is closed.
     // On Windows, users expect the close button to quit the app.
-    #[cfg(target_os = "windows")]
-    .manage(KeepInTrayState(AtomicBool::new(false)))
-    #[cfg(not(target_os = "windows"))]
-    .manage(KeepInTrayState(AtomicBool::new(true)))
+    .manage(KeepInTrayState(AtomicBool::new(!cfg!(target_os = "windows"))))
     // Prevent auto-hiding during startup/initialization before the user has ever focused the window.
     .manage(HasBeenFocusedState(AtomicBool::new(false)))
     // Track recent window interactions to avoid hiding during drag/resize.
