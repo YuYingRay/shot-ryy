@@ -375,9 +375,8 @@ pub fn setup_app(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
   #[cfg(desktop)]
   {
-    use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem};
+    use tauri::menu::{MenuBuilder, MenuItemBuilder};
     use tauri::tray::{TrayIconBuilder, TrayIconEvent};
-    use tauri::MouseButton;
 
     // Keep the app running in the menu bar (tray) when the window is closed.
     // Provide a small tray menu to reopen or quit.
@@ -430,7 +429,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
         }
       })
       .on_tray_icon_event(|tray, event| {
-        if let TrayIconEvent::Click { button: MouseButton::Left, .. } = event {
+        if let TrayIconEvent::DoubleClick { .. } = event {
           show_main_window_and_focus(&tray.app_handle());
         }
       })
