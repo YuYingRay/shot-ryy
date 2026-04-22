@@ -397,7 +397,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
 
       menu
         .separator()
-        .item(&PredefinedMenuItem::quit(app, Some("Quit"))?)
+        .item(&MenuItemBuilder::with_id("tray-quit", "Quit").build(app)?)
         .build()?
     };
 
@@ -420,6 +420,9 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), tauri::Error> {
             std::thread::spawn(move || {
               let _ = crate::capture::open_capture_overlay(&app, None);
             });
+          }
+          "tray-quit" => {
+            app.exit(0);
           }
           _ => {}
         }

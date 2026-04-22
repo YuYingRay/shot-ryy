@@ -5,6 +5,8 @@ import { getJson, setJson } from '../../utils/platform/safeStorage';
 import { defaultShortcuts } from '../../utils/platform/preferences';
 import { analyzeShortcuts, normalizeShortcuts } from '../../utils/platform/shortcuts';
 import { comboFromKeyboardEvent, formatComboForDisplay, isValidCombo, normalizeCombo } from '../../utils/platform/keybinds';
+import { useI18n } from '../context/I18nContext';
+import { supported } from '../../utils/core/i18nStrings';
 
 const DEFAULT_SETTINGS = Object.freeze({
   hideAppWhenUnfocused: true,
@@ -83,6 +85,8 @@ export default function SettingsModal({
   onSaveShortcuts,
   onChangeGeneralSettings,
 }) {
+  const { lang, setLang } = useI18n();
+
   const [settings, setSettings] = useState(loadGeneralSettings);
   const [shortcutDraft, setShortcutDraft] = useState(loadShortcutSettings);
   const [recordingKey, setRecordingKey] = useState(null);
@@ -349,6 +353,20 @@ export default function SettingsModal({
                     />
                   </label>
                 ))}
+                <div className="pt-2 pb-0.5">
+                  <div className="rounded-[8px] px-3 py-1.5 text-[13px] text-white/50 font-inter">Language</div>
+                </div>
+                <div className="px-3 py-2">
+                  <select
+                    className="w-full rounded-[8px] bg-white/5 px-3 py-2 text-[13px] text-white/90 outline-none border border-white/10"
+                    value={lang}
+                    onChange={(e) => setLang(e.target.value)}
+                  >
+                    {supported.map((s) => (
+                      <option key={s.code} value={s.code}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="pt-2 pb-0.5">
                   <div className="rounded-[8px] px-3 py-1.5 text-[13px] text-white/50 font-inter">Close window after</div>
                 </div>
