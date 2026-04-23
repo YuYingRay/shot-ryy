@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useI18n } from '../../../components/context/I18nContext'
 import { installTauriApi } from '../../../utils/platform/tauriApi'
 import { trimMacOsWindowScreenshotDataUrl } from '../../../utils/export/imageProcessor'
-import { copyImage as copyImageUtil, createExportableSnapshot, saveImageAdvanced, scaleAndEncodeBlob } from '../../../utils/export/imageProcessor'
+import { copyImage as copyImageUtil, compositeAnnotationsOnBlob, createExportableSnapshot, saveImageAdvanced, scaleAndEncodeBlob } from '../../../utils/export/imageProcessor'
 import { readFileAsDataUrlWithRetry } from '../../../utils/export/readFileAsDataUrlWithRetry'
 import { getJson, setJson } from '../../../utils/platform/safeStorage'
 import { formatExportErrorMessage, getDesktopApi } from '../AppHelpers'
@@ -24,6 +24,7 @@ export function useExportFunctions({
   setTransform,
   setAnnotationTool,
   rootFocusRef,
+  annotationActionsRef,
 }) {
   const { t } = useI18n()
   const [exportFolderPath, setExportFolderPath] = useState(() => {
@@ -115,12 +116,22 @@ export function useExportFunctions({
         const exportEl = getExportElement()
         if (!exportEl) return
 
-        const snapshotBlob = await createExportableSnapshot(exportEl, { editorOptions: imageOptions })
+        const annotations = annotationActionsRef?.current?.getAnnotations?.()
+        const hasAnnotations = !!(annotations?.strokes?.length || annotations?.texts?.length)
 
-        let finalBlob = snapshotBlob
+        const snapshotBlob = await createExportableSnapshot(exportEl, {
+          editorOptions: imageOptions,
+          hideAnnotations: hasAnnotations,
+        })
+
+        let composited = hasAnnotations
+          ? await compositeAnnotationsOnBlob(snapshotBlob, annotations, { penColor: imageOptions?.pen?.color })
+          : snapshotBlob
+
+        let finalBlob = composited
         if (exportScale !== 1 || exportFormat !== 'png') {
           try {
-            finalBlob = await scaleAndEncodeBlob(snapshotBlob, { scale: exportScale, format: exportFormat, quality: exportQuality })
+            finalBlob = await scaleAndEncodeBlob(composited, { scale: exportScale, format: exportFormat, quality: exportQuality })
           } catch {}
         }
 
@@ -159,7 +170,7 @@ export function useExportFunctions({
         pushToast(formatExportErrorMessage('Save', e), { variant: 'error', durationMs: 4500 })
       }
     })
-  }, [appWindow, blob?.src, buildDefaultExportFileName, exportFolderPath, exportFormat, exportQuality, exportScale, generalSettings?.closeAfterSaveToFolder, imageOptions, pickExportFolder, pushToast, runWithFrozenPreview])
+  }, [annotationActionsRef, appWindow, blob?.src, buildDefaultExportFileName, exportFolderPath, exportFormat, exportQuality, exportScale, generalSettings?.closeAfterSaveToFolder, imageOptions, pickExportFolder, pushToast, runWithFrozenPreview])
 
   const copyOutput = useCallback(async () => {
     await runWithFrozenPreview(async () => {
@@ -173,7 +184,11 @@ export function useExportFunctions({
           pushToast(t('nothingToCopy'), { variant: 'error' })
           return
         }
-        await copyImageUtil({ current: exportEl }, blob, imageOptions)
+        const annotations = annotationActionsRef?.current?.getAnnotations?.()
+        await copyImageUtil({ current: exportEl }, blob, imageOptions, {
+          annotations: annotations?.strokes?.length || annotations?.texts?.length ? annotations : null,
+          penColor: imageOptions?.pen?.color,
+        })
         pushToast(t('copiedToClipboard'), { variant: 'success' })
         if (generalSettings?.closeAfterCopy) {
           try { await (getDesktopApi()?.hideMainWindow?.() || appWindow?.hide?.()) } catch {}
@@ -182,7 +197,7 @@ export function useExportFunctions({
         pushToast(formatExportErrorMessage('Copy', e), { variant: 'error', durationMs: 4500 })
       }
     })
-  }, [appWindow, blob, generalSettings?.closeAfterCopy, imageOptions, pushToast, runWithFrozenPreview])
+  }, [annotationActionsRef, appWindow, blob, generalSettings?.closeAfterCopy, imageOptions, pushToast, runWithFrozenPreview])
 
   const saveOutput = useCallback(async () => {
     await runWithFrozenPreview(async () => {
@@ -197,12 +212,16 @@ export function useExportFunctions({
           return
         }
         const fileName = buildDefaultExportFileName()
+        const annotations = annotationActionsRef?.current?.getAnnotations?.()
         await saveImageAdvanced({ current: exportEl }, blob, {
           fileName,
           scale: exportScale,
           format: exportFormat,
           quality: exportQuality,
-        }, imageOptions)
+        }, imageOptions, {
+          annotations: annotations?.strokes?.length || annotations?.texts?.length ? annotations : null,
+          penColor: imageOptions?.pen?.color,
+        })
         pushToast(`${t('settingsSavingImage')}: ${fileName}`, { variant: 'success' })
         if (generalSettings?.closeAfterSave) {
           try { await (getDesktopApi()?.hideMainWindow?.() || appWindow?.hide?.()) } catch {}
@@ -211,7 +230,7 @@ export function useExportFunctions({
         pushToast(formatExportErrorMessage('Save', e), { variant: 'error', durationMs: 4500 })
       }
     })
-  }, [appWindow, blob, buildDefaultExportFileName, exportFormat, exportQuality, exportScale, generalSettings?.closeAfterSave, imageOptions, pushToast, runWithFrozenPreview])
+  }, [annotationActionsRef, appWindow, blob, buildDefaultExportFileName, exportFormat, exportQuality, exportScale, generalSettings?.closeAfterSave, imageOptions, pushToast, runWithFrozenPreview])
 
   const applyCapturedSource = useCallback(async (src, { shouldFocus = true } = {}) => {
     if (!src || typeof src !== 'string') return

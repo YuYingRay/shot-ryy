@@ -5,10 +5,12 @@ import {
 	dataUrlToBlob,
 	dataUrlToImage,
 	getNativeAwareBaseSize,
+	setExcludeAnnotationLayer,
 	withCanvasReplacements,
 	withExportImgSrcOverrides,
 	withExportMode,
 } from './exportDomCapture';
+import { drawAnnotationsToCanvas } from './drawAnnotations';
 
 // Clean, DOM-first export pipeline.
 // - Captures the export DOM (shadows + watermark included).
@@ -109,6 +111,53 @@ export const scaleAndEncodeBlob = async (
 	return await new Promise((resolve, reject) => {
 		canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed to encode canvas'))), mime, q);
 	});
+};
+
+export const compositeAnnotationsOnBlob = async (baseBlob, annotations, options = {}) => {
+	if (!baseBlob) return baseBlob;
+	const { strokes = [], texts = [] } = annotations || {};
+	if (!strokes.length && !texts.length) return baseBlob;
+
+	const useOffscreen = typeof OffscreenCanvas !== 'undefined' && typeof createImageBitmap !== 'undefined';
+
+	if (useOffscreen) {
+		try {
+			const bitmap = await createImageBitmap(baseBlob);
+			const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+			const ctx = canvas.getContext('2d');
+			if (ctx) {
+				ctx.drawImage(bitmap, 0, 0);
+				bitmap.close();
+				drawAnnotationsToCanvas(canvas, annotations, { skipClear: true, penColor: options.penColor });
+				return await canvas.convertToBlob({ type: 'image/png' });
+			}
+			bitmap.close();
+		} catch {
+			// Fall through to DOM-based path.
+		}
+	}
+
+	const url = URL.createObjectURL(baseBlob);
+	try {
+		const img = await new Promise((resolve, reject) => {
+			const el = new Image();
+			el.onload = () => resolve(el);
+			el.onerror = reject;
+			el.src = url;
+		});
+		const canvas = document.createElement('canvas');
+		canvas.width = img.naturalWidth || img.width;
+		canvas.height = img.naturalHeight || img.height;
+		const ctx = canvas.getContext('2d');
+		if (!ctx) throw new Error('Failed to get 2D context');
+		ctx.drawImage(img, 0, 0);
+		drawAnnotationsToCanvas(canvas, annotations, { skipClear: true, penColor: options.penColor });
+		return await new Promise((resolve, reject) => {
+			canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Failed to encode'))), 'image/png');
+		});
+	} finally {
+		try { URL.revokeObjectURL(url); } catch {}
+	}
 };
 
 const legacyCopyText = (text) => {
@@ -358,6 +407,8 @@ export const shouldShowBrowserWarning = () => false;
 export const createExportableSnapshot = async (element, options = {}) => {
 	if (!element) throw new Error('Element to capture is undefined or null');
 
+	const hideAnnotations = !!options?.hideAnnotations;
+
 	const exportScale = computeCaptureScale(element, {
 		targetWidth: options?.targetWidth,
 		targetHeight: options?.targetHeight,
@@ -369,36 +420,45 @@ export const createExportableSnapshot = async (element, options = {}) => {
 			? null
 			: (options?.backgroundColor ?? getComputedStyle(element).backgroundColor ?? null);
 
-	const capturedBlob = await withExportMode(element, exportScale, async () => {
-		// WKWebView + dom-to-image can intermittently fail to serialize <canvas> nodes.
-		// If there are visible canvases in the export tree (which includes the screenshot/wallpaper render),
-		// always use the safe canvas->img replacement path to avoid blank exports.
-		const hasVisibleCanvas = (() => {
-			try {
-				const list = Array.from(element.querySelectorAll?.('canvas') || []);
-				for (const canvas of list) {
-					const cs = window.getComputedStyle ? window.getComputedStyle(canvas) : null;
-					const hidden = cs && (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0);
-					if (!hidden) return true;
+	if (hideAnnotations) setExcludeAnnotationLayer(true);
+
+	let capturedBlob;
+	try {
+		capturedBlob = await withExportMode(element, exportScale, async () => {
+			const hasVisibleCanvas = (() => {
+				try {
+					const list = Array.from(element.querySelectorAll?.('canvas') || []);
+					for (const canvas of list) {
+						if (hideAnnotations && canvas.dataset?.shotstyleAnnotationCanvas === '1') continue;
+						const cs = window.getComputedStyle ? window.getComputedStyle(canvas) : null;
+						const hidden = cs && (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0);
+						if (!hidden) return true;
+					}
+					return false;
+				} catch {
+					return true;
 				}
-				return false;
-			} catch {
-				return true;
-			}
-		})();
+			})();
 
-		const capture = async () => {
-			if (!hasVisibleCanvas) {
-				return await captureWithDomToImage(element, { captureScale: exportScale, bgcolor });
-			}
+			const capture = async () => {
+				if (!hasVisibleCanvas) {
+					return await captureWithDomToImage(element, { captureScale: exportScale, bgcolor });
+				}
 
-			return await withCanvasReplacements(element, async () => {
-				return await captureWithDomToImage(element, { captureScale: exportScale, bgcolor });
-			});
-		};
+				return await withCanvasReplacements(element, async () => {
+					return await captureWithDomToImage(element, { captureScale: exportScale, bgcolor });
+				});
+			};
 
-		return await withExportImgSrcOverrides(element, capture);
-	}, { omitWatermark: !!options?.omitWatermark });
+			return await withExportImgSrcOverrides(element, capture);
+		}, { omitWatermark: !!options?.omitWatermark });
+	} finally {
+		if (hideAnnotations) setExcludeAnnotationLayer(false);
+	}
+
+	if (hideAnnotations) {
+		return capturedBlob;
+	}
 
 	let exportBlob = await trimTransparentEdgeSeamsBlob(capturedBlob, { maxTrimPerSide: 2, alphaMax: 0 });
 	return exportBlob;
@@ -406,11 +466,13 @@ export const createExportableSnapshot = async (element, options = {}) => {
 
 export const snapshotCreator = (element) => createExportableSnapshot(element);
 
-export const copyImage = async (wrapperRef, blob, editorOptions = null) => {
+export const copyImage = async (wrapperRef, blob, editorOptions = null, { annotations = null, penColor } = {}) => {
 	if (!blob?.src || !wrapperRef?.current) throw new Error('Nothing to copy');
 
 	const root = wrapperRef.current;
 	const wrapperStyle = getComputedStyle(root);
+
+	const hasAnnotations = !!(annotations?.strokes?.length || annotations?.texts?.length);
 
 	// Compute native-image-aware target dimensions so the copy resolution is
 	// independent of the current window / CSS layout size.
@@ -418,12 +480,17 @@ export const copyImage = async (wrapperRef, blob, editorOptions = null) => {
 	const clipboardTargetW = nativeBase.w;
 	const clipboardTargetH = nativeBase.h;
 
-	const copyBlob = await createExportableSnapshot(root, {
+	const baseBlob = await createExportableSnapshot(root, {
 		backgroundColor: wrapperStyle.backgroundColor,
 		editorOptions,
 		targetWidth: clipboardTargetW,
 		targetHeight: clipboardTargetH,
+		hideAnnotations: hasAnnotations,
 	});
+
+	const copyBlob = hasAnnotations
+		? await compositeAnnotationsOnBlob(baseBlob, annotations, { penColor })
+		: baseBlob;
 
 	let lastError = null;
 	const isDesktopRuntime =
@@ -514,7 +581,7 @@ export const processFileUpload = (event, setBlob) => {
 	}
 };
 
-export const saveImageAdvanced = async (wrapperRef, blob, opts = {}, editorOptions = null) => {
+export const saveImageAdvanced = async (wrapperRef, blob, opts = {}, editorOptions = null, { annotations = null, penColor } = {}) => {
 	if (!blob?.src || !wrapperRef?.current) return;
 
 	const {
@@ -532,15 +599,20 @@ export const saveImageAdvanced = async (wrapperRef, blob, opts = {}, editorOptio
 	const tw = Number(targetWidth);
 	const th = Number(targetHeight);
 	const hasTargetSize = Number.isFinite(tw) && tw > 0 && Number.isFinite(th) && th > 0;
+	const hasAnnotations = !!(annotations?.strokes?.length || annotations?.texts?.length);
 
 	try {
-		// Single capture pass — watermark stays in DOM (no omit/reapply overhead).
 		const baseBlob = await createExportableSnapshot(root, {
 			backgroundColor: wrapperStyle.backgroundColor,
 			editorOptions,
 			...(hasTargetSize ? { targetWidth: tw, targetHeight: th } : null),
 			omitWatermark: false,
+			hideAnnotations: hasAnnotations,
 		});
+
+		const compositedBlob = hasAnnotations
+			? await compositeAnnotationsOnBlob(baseBlob, annotations, { penColor })
+			: baseBlob;
 
 		// If the capture already matches the target size+format, skip re-encoding.
 		const needsReEncode = hasTargetSize
@@ -548,19 +620,19 @@ export const saveImageAdvanced = async (wrapperRef, blob, opts = {}, editorOptio
 			: (Math.abs(Number(scale) - 1) > 0.001 || format !== 'png');
 
 		const finalBlob = needsReEncode
-			? await scaleAndEncodeBlob(baseBlob, {
+			? await scaleAndEncodeBlob(compositedBlob, {
 					scale: Number(scale) || 1,
 					format,
 					quality,
 				})
 			: (format !== 'png'
-				? await scaleAndEncodeBlob(baseBlob, {
+				? await scaleAndEncodeBlob(compositedBlob, {
 						scale: 1,
 						format,
 						quality,
 						...(hasTargetSize ? { targetWidth: tw, targetHeight: th } : null),
 					})
-				: baseBlob);
+				: compositedBlob);
 
 		const ext = String(format).toLowerCase() === 'jpeg' ? 'jpg' : String(format).toLowerCase();
 		await downloadBlob(finalBlob, `${fileName}.${ext}`);

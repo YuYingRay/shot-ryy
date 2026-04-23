@@ -48,7 +48,15 @@ const getCanvasCacheKey = (canvas) => {
 	}
 };
 
-const domToImageFilter = (node) => !(node?.classList && node.classList.contains('transform-overlay'));
+let _excludeAnnotationLayer = false;
+
+export const setExcludeAnnotationLayer = (value) => { _excludeAnnotationLayer = !!value; };
+
+const domToImageFilter = (node) => {
+	if (node?.classList && node.classList.contains('transform-overlay')) return false;
+	if (_excludeAnnotationLayer && node?.dataset?.shotstyleAnnotationLayer === '1') return false;
+	return true;
+};
 
 const waitForImagesReady = async (root, { timeoutMs = 2500 } = {}) => {
 	if (!root || typeof root.querySelectorAll !== 'function') return;

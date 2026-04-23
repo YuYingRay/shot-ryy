@@ -446,6 +446,7 @@ const App = () => {
   } = useExportFunctions({
     blob, imageOptions, exportScale, exportFormat, exportQuality, exportRef,
     appWindow, generalSettings, pushToast, setBlob, setTransform, setAnnotationTool, rootFocusRef,
+    annotationActionsRef,
   })
 
   const { shortcuts, setShortcuts, shortcutRecordingKey, setShortcutRecordingKey, formatShortcutLabel } =

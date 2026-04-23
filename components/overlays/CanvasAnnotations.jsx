@@ -1691,6 +1691,7 @@ export function useCanvasAnnotations({ activeTool, onRequestDeselectTool, bgCanv
 
     return (
       <div
+        data-shotstyle-annotation-layer="1"
         className="absolute inset-0 overflow-hidden"
         style={{ zIndex: 25, pointerEvents: (activeTool || textEditor) ? 'auto' : 'none' }}
       >
@@ -1821,10 +1822,19 @@ export function useCanvasAnnotations({ activeTool, onRequestDeselectTool, bgCanv
     };
   }, [onExistingTextDoubleClickCapture, onExistingTextPointerDownCapture, onExistingTextPointerMoveCapture, onExistingTextPointerUpCapture]);
 
+  const getAnnotations = useCallback(() => {
+    const { strokes, texts } = annotationsRef.current;
+    return {
+      strokes: strokes.map((s) => ({ ...s, points: s.points.map((p) => ({ ...p })) })),
+      texts: texts.map((t) => ({ ...t })),
+    };
+  }, []);
+
   return {
     annotationLayer,
     selectionOverlays,
     outerCaptureHandlers,
     clearAllAnnotations,
+    getAnnotations,
   };
 }

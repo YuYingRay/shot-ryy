@@ -141,7 +141,7 @@ const ImageDisplay = ({ options, blob, wrapperRef, exportRef, activeTool, onRequ
   const watermarkElRef = useRef(null);
   const [insideWatermarkCorner, setInsideWatermarkCorner] = useState('bottom-right');
 
-  const { annotationLayer, selectionOverlays, outerCaptureHandlers, clearAllAnnotations } = useCanvasAnnotations({
+  const { annotationLayer, selectionOverlays, outerCaptureHandlers, clearAllAnnotations, getAnnotations } = useCanvasAnnotations({
     activeTool,
     onRequestDeselectTool,
     bgCanvasSize,
@@ -155,12 +155,12 @@ const ImageDisplay = ({ options, blob, wrapperRef, exportRef, activeTool, onRequ
   // without having to lift all state out of the canvas annotations hook.
   useEffect(() => {
     if (annotationActionsRef) {
-      annotationActionsRef.current = { clearAllAnnotations };
+      annotationActionsRef.current = { clearAllAnnotations, getAnnotations };
     }
     return () => {
       if (annotationActionsRef) annotationActionsRef.current = null;
     };
-  }, [annotationActionsRef, clearAllAnnotations]);
+  }, [annotationActionsRef, clearAllAnnotations, getAnnotations]);
 
   const setExportReadyAttr = useCallback((ready) => {
     const el = exportRef?.current;
