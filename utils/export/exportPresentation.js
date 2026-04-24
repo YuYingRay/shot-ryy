@@ -1,6 +1,6 @@
 export const getExportBackgroundFrameRadiusPx = ({ isExporting, previewRadiusPx }) => {
   const radius = Math.max(0, Number(previewRadiusPx) || 0);
-  return isExporting ? 0 : radius;
+  return radius;
 };
 
 export const getCardShadowPresentationKind = ({ isExporting, shadowStyles }) => {
@@ -14,11 +14,10 @@ export const getCardShadowPresentationKind = ({ isExporting, shadowStyles }) => 
   return boxShadow !== 'none' ? 'box-shadow' : 'none';
 };
 
-export const isExportPresentationReady = ({ isExporting, shadowKind, backgroundFrameRadiusPx }) => {
+export const isExportPresentationReady = ({ isExporting, shadowKind }) => {
   if (!isExporting) return true;
 
   const normalizedShadowKind = String(shadowKind || 'none').trim().toLowerCase();
-  const normalizedRadius = Math.max(0, Number(backgroundFrameRadiusPx) || 0);
 
-  return (normalizedShadowKind === 'drop-shadow' || normalizedShadowKind === 'none') && normalizedRadius === 0;
+  return normalizedShadowKind === 'drop-shadow' || normalizedShadowKind === 'none';
 };

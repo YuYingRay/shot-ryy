@@ -412,6 +412,7 @@ export const createExportableSnapshot = async (element, options = {}) => {
 	const exportScale = computeCaptureScale(element, {
 		targetWidth: options?.targetWidth,
 		targetHeight: options?.targetHeight,
+		exportScale: options?.exportScale,
 	});
 
 	const backgroundType = options?.editorOptions?.backgroundType;
@@ -606,6 +607,7 @@ export const saveImageAdvanced = async (wrapperRef, blob, opts = {}, editorOptio
 			backgroundColor: wrapperStyle.backgroundColor,
 			editorOptions,
 			...(hasTargetSize ? { targetWidth: tw, targetHeight: th } : null),
+			...(!hasTargetSize ? { exportScale: Number(scale) || 1 } : null),
 			omitWatermark: false,
 			hideAnnotations: hasAnnotations,
 		});
@@ -614,25 +616,14 @@ export const saveImageAdvanced = async (wrapperRef, blob, opts = {}, editorOptio
 			? await compositeAnnotationsOnBlob(baseBlob, annotations, { penColor })
 			: baseBlob;
 
-		// If the capture already matches the target size+format, skip re-encoding.
-		const needsReEncode = hasTargetSize
-			? false // createExportableSnapshot already captured at target dims
-			: (Math.abs(Number(scale) - 1) > 0.001 || format !== 'png');
-
-		const finalBlob = needsReEncode
+		const finalBlob = format !== 'png'
 			? await scaleAndEncodeBlob(compositedBlob, {
-					scale: Number(scale) || 1,
+					scale: 1,
 					format,
 					quality,
+					...(hasTargetSize ? { targetWidth: tw, targetHeight: th } : null),
 				})
-			: (format !== 'png'
-				? await scaleAndEncodeBlob(compositedBlob, {
-						scale: 1,
-						format,
-						quality,
-						...(hasTargetSize ? { targetWidth: tw, targetHeight: th } : null),
-					})
-				: compositedBlob);
+			: compositedBlob;
 
 		const ext = String(format).toLowerCase() === 'jpeg' ? 'jpg' : String(format).toLowerCase();
 		await downloadBlob(finalBlob, `${fileName}.${ext}`);

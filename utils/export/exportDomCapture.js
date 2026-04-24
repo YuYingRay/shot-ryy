@@ -273,7 +273,7 @@ export const getNativeAwareBaseSize = (root) => {
 	};
 };
 
-export const computeCaptureScale = (element, { targetWidth, targetHeight } = {}) => {
+export const computeCaptureScale = (element, { targetWidth, targetHeight, exportScale } = {}) => {
 	const baseW = Math.max(1, Math.round(Number(element?.offsetWidth) || 1));
 	const baseH = Math.max(1, Math.round(Number(element?.offsetHeight) || 1));
 
@@ -286,7 +286,9 @@ export const computeCaptureScale = (element, { targetWidth, targetHeight } = {})
 		desired = Math.max(tw / baseW, th / baseH);
 	} else {
 		const nativeBase = getNativeAwareBaseSize(element);
-		desired = Math.max(nativeBase.w / baseW, nativeBase.h / baseH);
+		const nativeRatio = Math.max(nativeBase.w / baseW, nativeBase.h / baseH);
+		const userScale = Number(exportScale) || 0;
+		desired = userScale > 0 ? Math.max(nativeRatio, userScale) : nativeRatio;
 	}
 	const clamped = clamp(desired, 1, 6);
 	const quantized = Math.round(clamped * 64) / 64;

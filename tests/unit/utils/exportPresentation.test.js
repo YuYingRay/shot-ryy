@@ -7,9 +7,9 @@ import {
 } from '../../../utils/export/exportPresentation';
 
 describe('export presentation helpers', () => {
-  it('keeps preview frame radius but removes it for export', () => {
+  it('preserves frame radius in both preview and export', () => {
     expect(getExportBackgroundFrameRadiusPx({ isExporting: false, previewRadiusPx: 26 })).toBe(26);
-    expect(getExportBackgroundFrameRadiusPx({ isExporting: true, previewRadiusPx: 26 })).toBe(0);
+    expect(getExportBackgroundFrameRadiusPx({ isExporting: true, previewRadiusPx: 26 })).toBe(26);
   });
 
   it('uses box-shadow in preview and drop-shadow in export when available', () => {
@@ -32,12 +32,11 @@ describe('export presentation helpers', () => {
     ).toBe(true);
   });
 
-  it('blocks export readiness until shadow mode and frame radius are correct', () => {
+  it('blocks export readiness until shadow mode is correct', () => {
     expect(
       isExportPresentationReady({
         isExporting: true,
         shadowKind: 'box-shadow',
-        backgroundFrameRadiusPx: 0,
       })
     ).toBe(false);
 
@@ -45,8 +44,7 @@ describe('export presentation helpers', () => {
       isExportPresentationReady({
         isExporting: true,
         shadowKind: 'drop-shadow',
-        backgroundFrameRadiusPx: 26,
       })
-    ).toBe(false);
+    ).toBe(true);
   });
 });

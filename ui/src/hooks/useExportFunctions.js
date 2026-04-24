@@ -122,6 +122,7 @@ export function useExportFunctions({
         const snapshotBlob = await createExportableSnapshot(exportEl, {
           editorOptions: imageOptions,
           hideAnnotations: hasAnnotations,
+          exportScale,
         })
 
         let composited = hasAnnotations
@@ -129,9 +130,9 @@ export function useExportFunctions({
           : snapshotBlob
 
         let finalBlob = composited
-        if (exportScale !== 1 || exportFormat !== 'png') {
+        if (exportFormat !== 'png') {
           try {
-            finalBlob = await scaleAndEncodeBlob(composited, { scale: exportScale, format: exportFormat, quality: exportQuality })
+            finalBlob = await scaleAndEncodeBlob(composited, { scale: 1, format: exportFormat, quality: exportQuality })
           } catch {}
         }
 

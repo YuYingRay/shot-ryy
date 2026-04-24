@@ -402,7 +402,7 @@ export function drawAnnotationsToCanvas(canvas, annotations, options = {}) {
         });
 
         if (outlinePoints.length > 0) {
-          const pathStr = stroke.pathStr || getSvgPathFromStrokePoints(outlinePoints);
+          const pathStr = getSvgPathFromStrokePoints(outlinePoints);
           const path2d = new Path2D(pathStr);
           ctx.fillStyle = color;
           ctx.fill(path2d);

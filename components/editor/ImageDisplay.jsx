@@ -1728,6 +1728,28 @@ const ImageDisplay = ({ options, blob, wrapperRef, exportRef, activeTool, onRequ
         ctx.globalCompositeOperation = 'copy';
         ctx.drawImage(tmp, 0, 0);
         ctx.globalCompositeOperation = prevOp;
+
+        // Bake rounded corners into canvas pixels so dom-to-image doesn't
+        // need to rely on CSS overflow:hidden clipping (which it can't).
+        if (exportBackgroundRadius > 0) {
+          const rScale = canvas.width / Math.max(1, width);
+          const r = exportBackgroundRadius * rScale;
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-in';
+          ctx.beginPath();
+          ctx.moveTo(r, 0);
+          ctx.lineTo(canvas.width - r, 0);
+          ctx.arcTo(canvas.width, 0, canvas.width, r, r);
+          ctx.lineTo(canvas.width, canvas.height - r);
+          ctx.arcTo(canvas.width, canvas.height, canvas.width - r, canvas.height, r);
+          ctx.lineTo(r, canvas.height);
+          ctx.arcTo(0, canvas.height, 0, canvas.height - r, r);
+          ctx.lineTo(0, r);
+          ctx.arcTo(0, 0, r, 0, r);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
         try {
           if (canvas.getAttribute('data-bg-render-token') === token) {
             canvas.setAttribute('data-bg-render-done', token);
@@ -1756,6 +1778,7 @@ const ImageDisplay = ({ options, blob, wrapperRef, exportRef, activeTool, onRequ
     options?.fx?.vignette,
     applyFxWithRust,
     exportScale,
+    exportBackgroundRadius,
     canRustFx,
   ]);
 
