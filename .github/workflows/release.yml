@@ -40,10 +40,10 @@ jobs:
         include:
           - platform: macos-latest
             args: '--target aarch64-apple-darwin'
-            rustTargets: 'aarch64-apple-darwin,x86_64-apple-darwin'
-          - platform: macos-latest
+            rustTargets: 'aarch64-apple-darwin'
+          - platform: macos-13
             args: '--target x86_64-apple-darwin'
-            rustTargets: 'aarch64-apple-darwin,x86_64-apple-darwin'
+            rustTargets: 'x86_64-apple-darwin'
           - platform: windows-latest
             args: ''
             rustTargets: ''
