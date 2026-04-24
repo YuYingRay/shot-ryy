@@ -41,7 +41,7 @@ jobs:
           - platform: macos-latest
             args: '--target aarch64-apple-darwin'
             rustTargets: 'aarch64-apple-darwin'
-          - platform: macos-13
+          - platform: macos-14
             args: '--target x86_64-apple-darwin'
             rustTargets: 'x86_64-apple-darwin'
           - platform: windows-latest
@@ -53,6 +53,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Prepare macOS x86_64 cross-build environment
+        if: runner.os == 'macOS' && contains(matrix.args, 'x86_64')
+        run: |
+          softwareupdate --install-rosetta --agree-to-license || true
+          brew install create-dmg
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
